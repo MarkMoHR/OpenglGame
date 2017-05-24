@@ -13,8 +13,11 @@ using namespace std;
 
 #define HeroHeight 7.5f
 
+#define GravityAcceler -9.8f
+
 #define MoveSpeed 0.01f
 #define BoundaryGap 1.0f
+#define JumpInitialSpeed 12.0f
 #define JumpFactor 0.004f
 #define GravityFactor 0.004f
 
@@ -30,10 +33,11 @@ FPSCamera::FPSCamera() {
 	pitch = 0;
 	yaw = 0;
 
-	cameraPos = glm::vec3(-35.0, 0, 40.0);
-	targetPos = glm::vec3(-35.0, 0, 35.0);
-	velocity = glm::vec3(0, 0, 0);
-	gravity = glm::vec3(0, -9.8f, 0);
+	cameraPos = glm::vec3(-35.0f, 4.f, 40.0f);
+	targetPos = glm::vec3(-35.0f, 4.f, 35.0f);
+	velocity = glm::vec3(0.f, 0.f, 0.f);
+	gravity = glm::vec3(0.f, GravityAcceler, 0.f);
+	accelerUp = glm::vec3(0.f, 0.f, 0.f);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -44,7 +48,7 @@ FPSCamera::FPSCamera() {
 	viewMatrix = glm::lookAt(
 		cameraPos,
 		targetPos,
-		glm::vec3(0.0, 1.0, 0.0)
+		glm::vec3(0.f, 1.0f, 0.f)
 	);
 	glMultMatrixf((float*)glm::value_ptr(viewMatrix));
 }
@@ -67,14 +71,9 @@ void FPSCamera::setSceneOuterBoundary(float x1, float z1, float x2, float z2) {
 	outerBoundary = glm::vec4(x1, z1, x2, z2);
 }
 
-void FPSCamera::setSceneInnerBoundary(float x1, float z1, float x2, float z2) {
-	innerBoundary.push_back(glm::vec4(x1 - BoundaryGap, z1 - BoundaryGap, x2 + BoundaryGap, z2 + BoundaryGap));
-}
-
-void FPSCamera::setSceneInnerBoundaryMap(float x1, float y1, float z1, float x2, float y2, float z2) {
+void FPSCamera::setSceneInnerBoundary(float x1, float y1, float z1, float x2, float y2, float z2) {
 	glm::vec3 key(x1 - BoundaryGap, y1 - BoundaryGap, z1 - BoundaryGap);
 	glm::vec3 value(x2 + BoundaryGap, y2 + BoundaryGap, z2 + BoundaryGap);
-	//innerBoundaryMap[key] = value;
 
 	innerBoundaryMin.push_back(key);
 	innerBoundaryMax.push_back(value);
@@ -84,9 +83,9 @@ void FPSCamera::updateView() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	glm::mat4 matroll = glm::rotate(glm::mat4(1.0), -roll, glm::vec3(0.0, 0.0, 1.0));
-	glm::mat4 matpitch = glm::rotate(glm::mat4(1.0), -pitch, glm::vec3(1.0, 0.0, 0.0));
-	glm::mat4 matyaw = glm::rotate(glm::mat4(1.0), -yaw, glm::vec3(0.0, 1.0, 0.0));
+	glm::mat4 matroll = glm::rotate(glm::mat4(1.0), -roll, glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 matpitch = glm::rotate(glm::mat4(1.0), -pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 matyaw = glm::rotate(glm::mat4(1.0), -yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	glm::mat4 mattranslate = glm::translate(glm::mat4(1.0f), -cameraPos);
 
@@ -95,7 +94,13 @@ void FPSCamera::updateView() {
 	glMultMatrixf((float*)glm::value_ptr(viewMatrix));
 }
 
-void FPSCamera::detectCameraMove() {
+void FPSCamera::updateCameraMovement() {
+	updateCameraHoriMovement();
+	updateCameraVertMovement();
+	updateView();
+}
+
+void FPSCamera::updateCameraHoriMovement() {
 	float dx = 0;
 	float dz = 0;
 
@@ -111,8 +116,8 @@ void FPSCamera::detectCameraMove() {
 	if (dz != 0 || dx != 0) {
 
 		//行走不改变y轴坐标
-		glm::vec3 forward = glm::vec3(viewMatrix[0][2], 0, viewMatrix[2][2]);
-		glm::vec3 strafe = glm::vec3(viewMatrix[0][0], 0, viewMatrix[2][0]);
+		glm::vec3 forward = glm::vec3(viewMatrix[0][2], 0.f, viewMatrix[2][2]);
+		glm::vec3 strafe = glm::vec3(viewMatrix[0][0], 0.f, viewMatrix[2][0]);
 
 		cameraPos += (-dz * forward + dx * strafe) * MoveSpeed;
 		targetPos = cameraPos + (-dz * forward + dx * strafe) * 1.5f;
@@ -120,38 +125,63 @@ void FPSCamera::detectCameraMove() {
 		//每次做完坐标变换后，先进行碰撞检测来调整坐标
 		outCollisionTest(outerBoundary[0], outerBoundary[1], outerBoundary[2], outerBoundary[3]);
 		//后面可以在这里添加：预处理，排除当前肯定不会产生碰撞的物体
-		for (int i = 0; i < innerBoundary.size(); i++) {
-			inCollisionTest(innerBoundary[i][0], innerBoundary[i][1], innerBoundary[i][2], innerBoundary[i][3]);
-		}
-
 		for (int i = 0; i < innerBoundaryMin.size(); i++) {
 			inCollisionTestWithHeight(innerBoundaryMin[i][0], innerBoundaryMin[i][1], innerBoundaryMin[i][2],
 				innerBoundaryMax[i][0], innerBoundaryMax[i][1], innerBoundaryMax[i][2]);
 		}
 	}
-	detectJump();
-
-	updateView();
 }
 
-void FPSCamera::detectJump() {
-	if (velocity.y != 0 && cameraPos.y >= 0) {
-		cameraPos += velocity * JumpFactor;
-		targetPos += velocity * JumpFactor;
+void FPSCamera::inCollisionTestWithHeight(float x1, float y1, float z1, float x2, float y2, float z2) {
+	if (!(cameraPos[1] <= y1 || cameraPos[1] - HeroHeight >= y2)) {
+		inCollisionTest(x1, z1, x2, z2);
+	}
+}
 
-		if (cameraPos.y < 0) {
-			cameraPos.y = 0;
-			isJumping = false;
-			velocity = glm::vec3(0, 0, 0);
+//判断在xz平面，相机位置是否位于碰撞体内部
+bool insideTheCollider(glm::vec3 _cameraPos, glm::vec3 _innerMin, glm::vec3 _innerMax) {
+	float camX = _cameraPos.x;
+	float camZ = _cameraPos.z;
+	float minX = _innerMin.x;
+	float minZ = _innerMin.z;
+	float maxX = _innerMax.x;
+	float maxZ = _innerMax.z;
+
+	if (minX <= camX && camX <= maxX && minZ <= camZ && camZ <= maxZ)
+		return true;
+	else
+		return false;
+}
+
+void FPSCamera::updateCameraVertMovement() {
+	glm::vec3 acceleration = gravity + accelerUp;
+	velocity += acceleration * GravityFactor;
+	cameraPos += velocity * JumpFactor;
+	targetPos += velocity * JumpFactor;
+
+	//cout << "velocity " << velocity.y << endl;
+	//if (abs(velocity.y) < 0.1f)
+	//	cout << "#### cameraPos.y " << cameraPos.y << endl;
+
+	//检测所有碰撞体
+	for (int i = 0; i < innerBoundaryMin.size(); i++) {
+		if (insideTheCollider(cameraPos, innerBoundaryMin[i], innerBoundaryMax[i])) {
+			//cout << "inside the colliderXZ" << endl;
+			if (cameraPos.y - HeroHeight <= innerBoundaryMax[i][1]) {    //接触到碰撞体
+				//cout << "touch the colliderY" << endl;
+				isJumping = false;
+				accelerUp.y = -GravityAcceler;
+				velocity.y = 0.f;
+				cameraPos.y = innerBoundaryMax[i][1] + HeroHeight;
+				break;
+			}
+			else {
+				accelerUp.y = 0.f;
+			}
 		}
 		else {
-			velocity += gravity * GravityFactor;
+			accelerUp.y = 0.f;
 		}
-		//if (abs(velocity.y) < 0.1f)
-		//	cout << "#### cameraPos.y " << cameraPos.y << endl;
-
-		//cout << "velocity " << velocity.y << " cameraPos.z " << cameraPos.z << endl;
-
 	}
 }
 
@@ -159,8 +189,10 @@ void FPSCamera::keyPressed(const unsigned char key) {
 	switch (key) {
 	case ' ':
 		cout << "space press!" << endl;
-		if (!isJumping)
-			velocity += glm::vec3(0, 12.f, 0);
+		if (!isJumping) {
+			velocity += glm::vec3(0.f, JumpInitialSpeed, 0.f);
+			accelerUp.y = 0.f;
+		}
 		isJumping = true;
 		break;
 
@@ -397,8 +429,3 @@ void FPSCamera::inCollisionTest(float x1, float z1, float x2, float z2) {
 	}
 }
 
-void FPSCamera::inCollisionTestWithHeight(float x1, float y1, float z1, float x2, float y2, float z2) {
-	if (!(cameraPos[1] < y1 || cameraPos[1] - HeroHeight > y2)) {
-		inCollisionTest(x1, z1, x2, z2);
-	}
-}

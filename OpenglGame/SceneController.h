@@ -1,8 +1,8 @@
 #include <gl/freeglut.h>
 
-#define roomSizeX 100  
-#define roomSizeY 15  
-#define roomSizeZ 100
+#define roomSizeX 100.f
+#define roomSizeY 15.f
+#define roomSizeZ 100.f
 
 void loadTex(int i, char *filename, GLuint* texture);
 

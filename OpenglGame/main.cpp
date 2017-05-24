@@ -76,36 +76,18 @@ void drawScene() {
 
 	//箱子  
 	glPushMatrix();
-	glTranslatef(-1.0f*roomSizeX / 2.0f + 2.5f, -1.0f*roomSizeY / 2.0f + 2.5f, -1.0f*roomSizeZ / 2.0f + 2.5f);
-	glScalef(5, 5, 5);
-	drawCube(texture[2]);
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(-1.0f*roomSizeX / 2.0f + 2.5f, -1.0f*roomSizeY / 2.0f + 7.5f, -1.0f*roomSizeZ / 2.0f + 2.5f);
-	glScalef(5, 5, 5);
-	drawCube(texture[2]);
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(-1.0f*roomSizeX / 2.0f + 7.5f, -1.0f*roomSizeY / 2.0f + 2.5f, -1.0f*roomSizeZ / 2.0f + 2.5f);
-	glScalef(5, 5, 5);
-	drawCube(texture[2]);
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(-1.0f*roomSizeX / 2.0f + 2.5f, -1.0f*roomSizeY / 2.0f + 2.5f, -1.0f*roomSizeZ / 2.0f + 7.5f);
-	glScalef(5, 5, 5);
-	drawCube(texture[2]);
-	glPopMatrix();
-
-	glPushMatrix();
 	glTranslatef(-30.f, -1.0f*roomSizeY / 2.0f + 2.5f, 0);
-	glScalef(5, 5, 5);
+	glScalef(5, 5, 20);
 	drawCube(texture[2]);
 	glPopMatrix();
 
-	cam->detectCameraMove();
+	glPushMatrix();
+	glTranslatef(-37.5f, -1.0f*roomSizeY / 2.0f + 7.5f, 0);
+	glScalef(5, 5, 10);
+	drawCube(texture[2]);
+	glPopMatrix();
+
+	cam->updateCameraMovement();
 
 }
 
@@ -121,7 +103,7 @@ void idle() {
 	glutPostRedisplay();
 }
 
-void init() {
+void initLightingAndTexture() {
 	glEnable(GL_DEPTH_TEST);//开启深度测试        
 	glEnable(GL_LIGHTING);  //开启光照模式   
 	glGenTextures(3, texture);
@@ -179,22 +161,30 @@ void redraw() {
 	glutSwapBuffers();//交换缓冲区  
 }
 
-int main(int argc, char *argv[]) {
-	glutInit(&argc, argv);    
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-	glutInitWindowPosition(100, 100);
-	glutInitWindowSize(600, 600);
-	int windowHandle = glutCreateWindow("Final project!");
-
+void initializeGL() {
 	cam = new FPSCamera();
 	//添加碰撞边缘
 	cam->setSceneOuterBoundary(-roomSizeX / 2, -roomSizeZ / 2, roomSizeX / 2, roomSizeZ / 2);
-	cam->setSceneInnerBoundary(-20, -20, 20, 20);
-	cam->setSceneInnerBoundary(-50, -45, -45, -40);
-	cam->setSceneInnerBoundary(-45, -50, -40, -45);
 
-	cam->setSceneInnerBoundaryMap(-32.5f, -1.0f*roomSizeY / 2.0f, -2.5f, 
-		-27.5f, -1.0f*roomSizeY / 2.0f + 5.f, 2.5f);
+	cam->setSceneInnerBoundary(-50.f, -1.0f*roomSizeY / 2.0f - 0.5f, -50.f,
+		50.f, -1.0f*roomSizeY / 2.0f, 50.f);    //地板collider
+	cam->setSceneInnerBoundary(-20.f, -1.0f*roomSizeY / 2.0f, -20.f,
+		20.f, 1.0f*roomSizeY / 2.0f, 20.f);    //中间盒子墙壁collider
+
+	cam->setSceneInnerBoundary(-32.5f, -1.0f*roomSizeY / 2.0f, -10.f,
+		-27.5f, -1.0f*roomSizeY / 2.0f + 5.f, 10.f);    //box collider
+	cam->setSceneInnerBoundary(-40.f, -1.0f*roomSizeY / 2.0f + 5.f, -5.f,
+		-35.f, -1.0f*roomSizeY / 2.0f + 10.f, 5.f);    //box collider
+}
+
+int main(int argc, char *argv[]) {
+	glutInit(&argc, argv);    
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+	glutInitWindowPosition(250, 100);
+	glutInitWindowSize(600, 600);
+	int windowHandle = glutCreateWindow("Final project!");
+
+	initializeGL();
 
 	glutDisplayFunc(redraw);               //注册绘制回调函数
 	glutReshapeFunc(reshape);              //注册重绘回调函数
@@ -204,7 +194,7 @@ int main(int argc, char *argv[]) {
 	glutMotionFunc(mouseMove);             //注册鼠标点击&移动回调函数
 	glutIdleFunc(idle);                    //注册全局回调函数：空闲时调用       
 
-	init();
+	initLightingAndTexture();
 	glutMainLoop();                        // glut事件处理循环    
 
 	delete cam;
