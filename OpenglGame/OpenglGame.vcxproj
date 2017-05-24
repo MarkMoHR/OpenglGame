@@ -111,11 +111,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="FPSCamera.h" />
+    <ClInclude Include="PhysicsEngine.h" />
     <ClInclude Include="SceneController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FPSCamera.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PhysicsEngine.cpp" />
     <ClCompile Include="SceneController.cpp" />
     <ClCompile Include="texture.cpp" />
   </ItemGroup>
