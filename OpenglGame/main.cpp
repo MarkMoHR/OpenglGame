@@ -70,34 +70,42 @@ void drawScene() {
 
 	//中间墙壁  
 	glPushMatrix();
-	glScalef(50, 15, 50);
+	glScalef(40, 15, 40);
 	drawCube(texture[1]);
 	glPopMatrix();
 
 	//箱子  
 	glPushMatrix();
-	glTranslatef(-1.0f*roomSizeX / 2.0f + 2.5f, -1.0f*roomSizeY / 2.0f + 2.5f, -1.0f*roomSizeZ / 2.0f + 5.0f);
+	glTranslatef(-1.0f*roomSizeX / 2.0f + 2.5f, -1.0f*roomSizeY / 2.0f + 2.5f, -1.0f*roomSizeZ / 2.0f + 2.5f);
 	glScalef(5, 5, 5);
 	drawCube(texture[2]);
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(-1.0f*roomSizeX / 2.0f + 2.5f, -1.0f*roomSizeY / 2.0f + 7.5f, -1.0f*roomSizeZ / 2.0f + 5.0f);
+	glTranslatef(-1.0f*roomSizeX / 2.0f + 2.5f, -1.0f*roomSizeY / 2.0f + 7.5f, -1.0f*roomSizeZ / 2.0f + 2.5f);
 	glScalef(5, 5, 5);
 	drawCube(texture[2]);
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(-1.0f*roomSizeX / 2.0f + 7.5f, -1.0f*roomSizeY / 2.0f + 2.5f, -1.0f*roomSizeZ / 2.0f + 5.0f);
+	glTranslatef(-1.0f*roomSizeX / 2.0f + 7.5f, -1.0f*roomSizeY / 2.0f + 2.5f, -1.0f*roomSizeZ / 2.0f + 2.5f);
 	glScalef(5, 5, 5);
 	drawCube(texture[2]);
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(-1.0f*roomSizeX / 2.0f + 2.5f, -1.0f*roomSizeY / 2.0f + 2.5f, -1.0f*roomSizeZ / 2.0f + 10.0f);
+	glTranslatef(-1.0f*roomSizeX / 2.0f + 2.5f, -1.0f*roomSizeY / 2.0f + 2.5f, -1.0f*roomSizeZ / 2.0f + 7.5f);
 	glScalef(5, 5, 5);
 	drawCube(texture[2]);
 	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-30.f, -1.0f*roomSizeY / 2.0f + 2.5f, 0);
+	glScalef(5, 5, 5);
+	drawCube(texture[2]);
+	glPopMatrix();
+
+	cam->detectCameraMove();
 
 }
 
@@ -123,8 +131,12 @@ void init() {
 	loadTex(3, "textures/11.bmp", texture);
 }
 
-void processNormalkey(unsigned char k, int x, int y) {
-	cam->pressed(k);
+void normalKeyPress(unsigned char key, int x, int y) {
+	cam->keyPressed(key);
+}
+
+void normalKeyUp(unsigned char key, int x, int y) {
+	cam->keyUp(key);
 }
 
 //鼠标刚点击时
@@ -177,13 +189,17 @@ int main(int argc, char *argv[]) {
 	cam = new FPSCamera();
 	//添加碰撞边缘
 	cam->setSceneOuterBoundary(-roomSizeX / 2, -roomSizeZ / 2, roomSizeX / 2, roomSizeZ / 2);
-	cam->setSceneInnerBoundary(-27, -27, 27, 27);
-	cam->setSceneInnerBoundary(-50, -44.5, -43, -35.5);
-	cam->setSceneInnerBoundary(-47, -50, -38, -40.5);
+	cam->setSceneInnerBoundary(-20, -20, 20, 20);
+	cam->setSceneInnerBoundary(-50, -45, -45, -40);
+	cam->setSceneInnerBoundary(-45, -50, -40, -45);
+
+	cam->setSceneInnerBoundaryMap(-32.5f, -1.0f*roomSizeY / 2.0f, -2.5f, 
+		-27.5f, -1.0f*roomSizeY / 2.0f + 5.f, 2.5f);
 
 	glutDisplayFunc(redraw);               //注册绘制回调函数
 	glutReshapeFunc(reshape);              //注册重绘回调函数
-	glutKeyboardFunc(processNormalkey);    //注册普通按键回调函数
+	glutKeyboardFunc(normalKeyPress);    //注册普通按键回调函数
+	glutKeyboardUpFunc(normalKeyUp);
 	glutMouseFunc(mouseClick);             //注册鼠标点击回调函数
 	glutMotionFunc(mouseMove);             //注册鼠标点击&移动回调函数
 	glutIdleFunc(idle);                    //注册全局回调函数：空闲时调用       

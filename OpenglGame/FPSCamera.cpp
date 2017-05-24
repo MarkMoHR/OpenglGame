@@ -11,8 +11,15 @@ using namespace std;
 #define min(x,y) ((x) < (y) ? (x) : (y))
 #define max(x,y) ((x) < (y) ? (y) : (x))
 
+#define HeroHeight 7.5f
+
+#define MoveSpeed 0.01f
+#define BoundaryGap 1.0f
+#define JumpFactor 0.004f
+#define GravityFactor 0.004f
+
 FPSCamera::FPSCamera() {
-	speed = 0.3;
+	isWPressing = isSPressing = isAPressing = isDPressing = isJumping = false;
 
 	pfov = 45.0;
 	pratio = 1.0;
@@ -25,6 +32,8 @@ FPSCamera::FPSCamera() {
 
 	cameraPos = glm::vec3(-35.0, 0, 40.0);
 	targetPos = glm::vec3(-35.0, 0, 35.0);
+	velocity = glm::vec3(0, 0, 0);
+	gravity = glm::vec3(0, -9.8f, 0);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -51,18 +60,27 @@ void FPSCamera::resetWinSize(int w, int h) {
 	gluPerspective(pfov, pratio, pnear, pfar);
 
 	glMatrixMode(GL_MODELVIEW);
-	update();
+	updateView();
 }
 
-void FPSCamera::setSceneOuterBoundary(float x1, float x2, float z1, float z2) {
-	outerBoundary = glm::vec4(x1, x2, z1, z2);
+void FPSCamera::setSceneOuterBoundary(float x1, float z1, float x2, float z2) {
+	outerBoundary = glm::vec4(x1, z1, x2, z2);
 }
 
-void FPSCamera::setSceneInnerBoundary(float x1, float x2, float z1, float z2) {
-	innerBoundary.push_back(glm::vec4(x1, x2, z1, z2));
+void FPSCamera::setSceneInnerBoundary(float x1, float z1, float x2, float z2) {
+	innerBoundary.push_back(glm::vec4(x1 - BoundaryGap, z1 - BoundaryGap, x2 + BoundaryGap, z2 + BoundaryGap));
 }
 
-void FPSCamera::update() {
+void FPSCamera::setSceneInnerBoundaryMap(float x1, float y1, float z1, float x2, float y2, float z2) {
+	glm::vec3 key(x1 - BoundaryGap, y1 - BoundaryGap, z1 - BoundaryGap);
+	glm::vec3 value(x2 + BoundaryGap, y2 + BoundaryGap, z2 + BoundaryGap);
+	//innerBoundaryMap[key] = value;
+
+	innerBoundaryMin.push_back(key);
+	innerBoundaryMax.push_back(value);
+}
+
+void FPSCamera::updateView() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -77,63 +95,134 @@ void FPSCamera::update() {
 	glMultMatrixf((float*)glm::value_ptr(viewMatrix));
 }
 
-void FPSCamera::pressed(const unsigned char key) {
+void FPSCamera::detectCameraMove() {
 	float dx = 0;
 	float dz = 0;
 
+	if (isWPressing)
+		dz += 2;
+	if (isSPressing)
+		dz -= 2;
+	if (isAPressing)
+		dx -= 2;
+	if (isDPressing)
+		dx += 2;
+
+	if (dz != 0 || dx != 0) {
+
+		//行走不改变y轴坐标
+		glm::vec3 forward = glm::vec3(viewMatrix[0][2], 0, viewMatrix[2][2]);
+		glm::vec3 strafe = glm::vec3(viewMatrix[0][0], 0, viewMatrix[2][0]);
+
+		cameraPos += (-dz * forward + dx * strafe) * MoveSpeed;
+		targetPos = cameraPos + (-dz * forward + dx * strafe) * 1.5f;
+
+		//每次做完坐标变换后，先进行碰撞检测来调整坐标
+		outCollisionTest(outerBoundary[0], outerBoundary[1], outerBoundary[2], outerBoundary[3]);
+		//后面可以在这里添加：预处理，排除当前肯定不会产生碰撞的物体
+		for (int i = 0; i < innerBoundary.size(); i++) {
+			inCollisionTest(innerBoundary[i][0], innerBoundary[i][1], innerBoundary[i][2], innerBoundary[i][3]);
+		}
+
+		for (int i = 0; i < innerBoundaryMin.size(); i++) {
+			inCollisionTestWithHeight(innerBoundaryMin[i][0], innerBoundaryMin[i][1], innerBoundaryMin[i][2],
+				innerBoundaryMax[i][0], innerBoundaryMax[i][1], innerBoundaryMax[i][2]);
+		}
+	}
+	detectJump();
+
+	updateView();
+}
+
+void FPSCamera::detectJump() {
+	if (velocity.y != 0 && cameraPos.y >= 0) {
+		cameraPos += velocity * JumpFactor;
+		targetPos += velocity * JumpFactor;
+
+		if (cameraPos.y < 0) {
+			cameraPos.y = 0;
+			isJumping = false;
+			velocity = glm::vec3(0, 0, 0);
+		}
+		else {
+			velocity += gravity * GravityFactor;
+		}
+		//if (abs(velocity.y) < 0.1f)
+		//	cout << "#### cameraPos.y " << cameraPos.y << endl;
+
+		//cout << "velocity " << velocity.y << " cameraPos.z " << cameraPos.z << endl;
+
+	}
+}
+
+void FPSCamera::keyPressed(const unsigned char key) {
 	switch (key) {
-		case ' ':
-			cout << "space press!" << endl;
-			break;
+	case ' ':
+		cout << "space press!" << endl;
+		if (!isJumping)
+			velocity += glm::vec3(0, 12.f, 0);
+		isJumping = true;
+		break;
 
-		case 'W':
-		case 'w':
-			dz = 2;
-			break;
+	case 'W':
+	case 'w':
+		isWPressing = true;
+		break;
 
-		case 'S':
-		case 's':
-			dz = -2;
-			break;
+	case 'S':
+	case 's':
+		isSPressing = true;
+		break;
 
-		case 'A':
-		case 'a':
-			dx = -2;
-			break;
+	case 'A':
+	case 'a':
+		isAPressing = true;
+		break;
 
-		case 'D':
-		case 'd':
-			dx = 2;
-			break;
-		default:
-			break;
+	case 'D':
+	case 'd':
+		isDPressing = true;
+		break;
+	default:
+		break;
 	}
+}
 
-	//glm::vec3 forward = glm::vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
-	//glm::vec3 strafe = glm::vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
+void FPSCamera::keyUp(const unsigned char key) {
+	switch (key) {
+	case ' ':
 
-	//行走不改变y轴坐标
-	glm::vec3 forward = glm::vec3(viewMatrix[0][2], 0, viewMatrix[2][2]);
-	glm::vec3 strafe = glm::vec3(viewMatrix[0][0], 0, viewMatrix[2][0]);
+		break;
 
-	cameraPos += (-dz * forward + dx * strafe) * speed;
-	targetPos = cameraPos + (-dz * forward + dx * strafe) * 2.0;
+	case 'W':
+	case 'w':
+		isWPressing = false;
+		break;
 
-	//每次做完坐标变换后，先进行碰撞检测来调整坐标
-	outCollisionTest(outerBoundary[0], outerBoundary[1], outerBoundary[2], outerBoundary[3]);
-	//后面可以在这里添加：预处理，排除当前肯定不会产生碰撞的物体
-	for (int i = 0; i < innerBoundary.size(); i++) {
-		inCollisionTest(innerBoundary[i][0], innerBoundary[i][1], innerBoundary[i][2], innerBoundary[i][3]);
+	case 'S':
+	case 's':
+		isSPressing = false;
+		break;
+
+	case 'A':
+	case 'a':
+		isAPressing = false;
+		break;
+
+	case 'D':
+	case 'd':
+		isDPressing = false;
+		break;
+	default:
+		break;
 	}
-
-	update();
 }
 
 void FPSCamera::rotate(GLfloat const pitchRad, GLfloat const yawRad) {
 	pitch += pitchRad;
 	yaw += yawRad;
 
-	update();
+	updateView();
 }
 
 void FPSCamera::outCollisionTest(float x1, float z1, float x2, float z2) {
@@ -305,5 +394,11 @@ void FPSCamera::inCollisionTest(float x1, float z1, float x2, float z2) {
 			cameraPos[0] = x1;
 			targetPos[0] += (cameraPos[0] - camX);
 		}
+	}
+}
+
+void FPSCamera::inCollisionTestWithHeight(float x1, float y1, float z1, float x2, float y2, float z2) {
+	if (!(cameraPos[1] < y1 || cameraPos[1] - HeroHeight > y2)) {
+		inCollisionTest(x1, z1, x2, z2);
 	}
 }
