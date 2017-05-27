@@ -130,18 +130,24 @@ void PhysicsEngine::updateCameraVertMovement(glm::vec3 & cameraPos, glm::vec3 & 
 
 	//检测所有碰撞体
 	for (int i = 0; i < innerBoundaryMin.size(); i++) {
+		//如果在XZ平面进入碰撞体所在区域
 		if (insideTheCollider(cameraPos, innerBoundaryMin[i], innerBoundaryMax[i])) {
-			//cout << "inside the colliderXZ" << endl;
-			if (cameraPos.y - HeroHeight <= innerBoundaryMax[i][1]) {    //接触到碰撞体
-				//cout << "touch the colliderY" << endl;
+			if (cameraPos.y - HeroHeight <= innerBoundaryMax[i][1]
+				&& cameraPos.y >= innerBoundaryMax[i][1]) {              //脚接触到碰撞体顶部
+				//cout << "touch the top of collider" << endl;
 				isJumping = false;
 				accelerUp.y = -GravityAcceler;
 				velocity.y = 0.f;
 				cameraPos.y = innerBoundaryMax[i][1] + HeroHeight;
 				break;
 			}
-			else {
-				accelerUp.y = 0.f;
+
+			if (cameraPos.y >= innerBoundaryMin[i][1] &&
+				cameraPos.y - HeroHeight <= innerBoundaryMin[i][1]) {    //头接触到碰撞体底部
+				//cout << "touch the bottom of collider" << endl;
+				velocity.y = 0.f;
+				cameraPos.y = innerBoundaryMin[i][1];
+				break;
 			}
 		}
 		else {
@@ -159,6 +165,7 @@ void PhysicsEngine::inCollisionTest(glm::vec3 & cameraPos, glm::vec3 & targetPos
 }
 
 void PhysicsEngine::inCollisionTestWithHeight(float x1, float y1, float z1, float x2, float y2, float z2, glm::vec3 & cameraPos, glm::vec3 & targetPos) {
+	//当身体处于碰撞体垂直区域范围内，才进行XZ平面的碰撞检测
 	if (!(cameraPos[1] <= y1 || cameraPos[1] - HeroHeight >= y2)) {
 		inCollisionTestXZ(x1, z1, x2, z2, cameraPos, targetPos);
 	}

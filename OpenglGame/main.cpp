@@ -2,93 +2,32 @@
 
 #include <stdio.h>  
 #include "SceneController.h"
-#include "FPSCamera.h"
 
-#define Sensitivity 0.002
+#define Sensitivity 0.003
 
 FPSCamera* cam;
 
 static int mouseLastPosX = 0;
 static int mouseLastPosY = 0;
 
-GLuint texture[4];
+GLuint texture[10];
 
 void drawScene() {
+	//天空盒
+	drawSkybox(texture);
+
 	//地板  
 	glPushMatrix();
-	glTranslatef(0.0f, -1.0f*roomSizeY / 2.0f, 0.0f);
+	glTranslatef(0.0f, -roomSizeY / 2.0f, 0.0f);
 	glRotatef(90, 1, 0, 0);
-
 	glScalef(roomSizeX, roomSizeZ, 1);
 	drawRect(texture[3]);
 	glPopMatrix();
 
-	//天花板     
-	glPushMatrix();
-	glTranslatef(0.0f, 1.0f*roomSizeY / 2.0f, 0.0f);
-	glRotatef(270, 1, 0, 0);
-
-	glScalef(roomSizeX, roomSizeZ, 1);
-	drawRect(texture[0]);
-	glPopMatrix();
-
-	//墙壁（前）  
-	glPushMatrix();
-	glTranslatef(0.0f, 0.0f, -1.0f*roomSizeZ / 2.0);
-	glRotatef(180, 1, 0, 0);
-	glRotatef(180, 0, 0, 1);
-
-	glScalef(roomSizeX, roomSizeY, 1);
-	drawRect(texture[1]);
-	glPopMatrix();
-
-	//墙壁（后）  
-	glPushMatrix();
-	glTranslatef(0.0f, 0.0f, 1.0f*roomSizeZ / 2.0f);
-	glScalef(roomSizeX, roomSizeY, 1);
-
-	drawRect(texture[1]);
-	glPopMatrix();
-
-	//墙壁（左）  
-	glPushMatrix();
-	glTranslatef(-1.0f*roomSizeX / 2.0f, 0.0f, 0.0f);
-	glRotatef(270, 0, 1, 0);
-
-	glScalef(roomSizeZ, roomSizeY, 1);
-	drawRect(texture[1]);
-	glPopMatrix();
-
-	//墙壁（右）  
-	glPushMatrix();
-	glTranslatef(1.0f*roomSizeX / 2.0f, 0.0f, 0.0f);
-	glRotatef(90, 0, 1, 0);
-
-	glScalef(roomSizeZ, roomSizeY, 1);
-	drawRect(texture[1]);
-	glPopMatrix();
-
-	//中间墙壁  
-	glPushMatrix();
-	glScalef(40, 15, 40);
-	drawCube(texture[1]);
-	glPopMatrix();
-
 	//箱子  
-	glPushMatrix();
-	glTranslatef(-30.f, -1.0f*roomSizeY / 2.0f + 2.5f, 0);
-	glScalef(5, 5, 20);
-	drawCube(texture[2]);
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(-37.5f, -1.0f*roomSizeY / 2.0f + 7.5f, 0);
-	glScalef(5, 5, 10);
-	drawCube(texture[2]);
-	glPopMatrix();
+	drawBoxColliders(texture);
 
 	cam->updateCameraMovement();
-
 }
 
 void reshape(int width, int height) {
@@ -106,11 +45,18 @@ void idle() {
 void initLightingAndTexture() {
 	glEnable(GL_DEPTH_TEST);//开启深度测试        
 	glEnable(GL_LIGHTING);  //开启光照模式   
-	glGenTextures(3, texture);
+	glGenTextures(10, texture);
 	loadTex(0, "textures/1.bmp", texture);
 	loadTex(1, "textures/16.bmp", texture);
 	loadTex(2, "textures/14.bmp", texture);
 	loadTex(3, "textures/11.bmp", texture);
+
+	loadTex(4, "textures/Skybox/Sunny_up.bmp", texture);
+	loadTex(5, "textures/Skybox/Sunny_down.bmp", texture);
+	loadTex(6, "textures/Skybox/Sunny_left.bmp", texture);
+	loadTex(7, "textures/Skybox/Sunny_right.bmp", texture);
+	loadTex(8, "textures/Skybox/Sunny_front.bmp", texture);
+	loadTex(9, "textures/Skybox/Sunny_back.bmp", texture);
 }
 
 void normalKeyPress(unsigned char key, int x, int y) {
@@ -164,17 +110,13 @@ void redraw() {
 void initializeGL() {
 	cam = new FPSCamera();
 	//添加碰撞边缘
-	cam->setSceneOuterBoundary(-roomSizeX / 2, -roomSizeZ / 2, roomSizeX / 2, roomSizeZ / 2);
+	cam->setSceneOuterBoundary(-roomSizeX / 2.0, -roomSizeZ / 2.0, roomSizeX / 2.0, roomSizeZ / 2.0);
 
-	cam->setSceneInnerBoundary(-50.f, -1.0f*roomSizeY / 2.0f - 0.5f, -50.f,
-		50.f, -1.0f*roomSizeY / 2.0f, 50.f);    //地板collider
-	cam->setSceneInnerBoundary(-20.f, -1.0f*roomSizeY / 2.0f, -20.f,
-		20.f, 1.0f*roomSizeY / 2.0f, 20.f);    //中间盒子墙壁collider
+	cam->setSceneInnerBoundary(-roomSizeX / 2.0,  -roomSizeY / 2.0f - 1.f, -roomSizeZ / 2.0,
+		roomSizeX / 2.0, -roomSizeY / 2.0f, roomSizeZ / 2.0);    //地板collider
 
-	cam->setSceneInnerBoundary(-32.5f, -1.0f*roomSizeY / 2.0f, -10.f,
-		-27.5f, -1.0f*roomSizeY / 2.0f + 5.f, 10.f);    //box collider
-	cam->setSceneInnerBoundary(-40.f, -1.0f*roomSizeY / 2.0f + 5.f, -5.f,
-		-35.f, -1.0f*roomSizeY / 2.0f + 10.f, 5.f);    //box collider
+	initBoxCollidersProperty();
+	setBoxColliderBoundary(cam);
 }
 
 int main(int argc, char *argv[]) {

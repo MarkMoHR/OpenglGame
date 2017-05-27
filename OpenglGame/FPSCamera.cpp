@@ -16,14 +16,14 @@ FPSCamera::FPSCamera() {
 	pfov = 45.0;
 	pratio = 1.0;
 	pnear = 1.0;
-	pfar = 150.0;
+	pfar = 1000.0;
 
 	roll = 0;
 	pitch = 0;
 	yaw = 0;
 
-	cameraPos = glm::vec3(-35.0f, 4.f, 40.0f);
-	targetPos = glm::vec3(-35.0f, 4.f, 35.0f);
+	cameraPos = glm::vec3(-80.0f, -20.f, 90.0f);
+	targetPos = glm::vec3(-80.0f, -20.f, 85.0f);
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
