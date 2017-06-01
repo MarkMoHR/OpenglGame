@@ -9,15 +9,15 @@ using namespace std;
 #define min(x,y) ((x) < (y) ? (x) : (y))
 #define max(x,y) ((x) < (y) ? (y) : (x))
 
-#define HeroHeight 7.5f
+#define HeroHeight 7.5f           //玩家视点到脚的高度
 
 #define GravityAcceler -9.8f
 
-#define MoveSpeed 0.01f
-#define BoundaryGap 1.0f
-#define JumpInitialSpeed 12.0f
-#define JumpFactor 0.004f
-#define GravityFactor 0.004f
+#define MoveSpeed 0.15f           //玩家移动速度
+#define BoundaryGap 1.0f          //碰撞间距
+#define JumpInitialSpeed 12.0f    //起跳初速度
+#define JumpFactor 0.04f          //跳起速度系数
+#define GravityFactor 0.04f       //下落速度系数
 
 struct dot {
 	float x;

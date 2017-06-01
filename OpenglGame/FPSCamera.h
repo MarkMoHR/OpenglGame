@@ -20,6 +20,9 @@ class FPSCamera {
 
 		void updateCameraMovement();    //每帧绘制的时候更新摄像机移动
 
+		//根据面包的位置判断是否能吃掉面包
+		bool detectPlayerEatingBread(glm::vec3 breadPos, float dist);
+
 	private:
 		void updateCameraHoriMovement();        //每帧绘制的时候更新摄像机水平方向移动
 		void updateCameraVertMovement();        //每帧绘制的时候更新摄像机垂直方向移动

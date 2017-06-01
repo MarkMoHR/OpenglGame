@@ -26,8 +26,10 @@ void drawScene() {
 
 	//箱子  
 	drawBoxColliders(texture);
+	drawBreadModels();
 
 	cam->updateCameraMovement();
+	detectBreadBeingEaten(cam);
 }
 
 void reshape(int width, int height) {
@@ -88,21 +90,6 @@ void mouseMove(int x, int y) {
 void redraw() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//清除颜色和深度缓存   
 	
-	glPolygonMode(GL_FRONT, GL_FILL);
-	glFrontFace(GL_CCW);
-	glEnable(GL_CULL_FACE);
-	// 启用光照计算  
-	glEnable(GL_LIGHTING);
-	// 指定环境光强度（RGBA）  
-	GLfloat ambientLight[] = { 2.0f, 2.0f, 2.0f, 1.0f };
-
-	// 设置光照模型，将ambientLight所指定的RGBA强度值应用到环境光  
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientLight);
-	// 启用颜色追踪  
-	glEnable(GL_COLOR_MATERIAL);
-	// 设置多边形正面的环境光和散射光材料属性，追踪glColor  
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-
 	drawScene();//绘制场景   
 	glutSwapBuffers();//交换缓冲区  
 }
@@ -117,6 +104,10 @@ void initializeGL() {
 
 	initBoxCollidersProperty();
 	setBoxColliderBoundary(cam);
+
+	initBreadModels();
+
+	setupLights();
 }
 
 int main(int argc, char *argv[]) {
@@ -124,13 +115,13 @@ int main(int argc, char *argv[]) {
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 	glutInitWindowPosition(250, 100);
 	glutInitWindowSize(600, 600);
-	int windowHandle = glutCreateWindow("Final project!");
+	int windowHandle = glutCreateWindow("Final project - OpenGL game!");
 
 	initializeGL();
 
 	glutDisplayFunc(redraw);               //注册绘制回调函数
 	glutReshapeFunc(reshape);              //注册重绘回调函数
-	glutKeyboardFunc(normalKeyPress);    //注册普通按键回调函数
+	glutKeyboardFunc(normalKeyPress);      //注册普通按键回调函数
 	glutKeyboardUpFunc(normalKeyUp);
 	glutMouseFunc(mouseClick);             //注册鼠标点击回调函数
 	glutMotionFunc(mouseMove);             //注册鼠标点击&移动回调函数
@@ -140,6 +131,7 @@ int main(int argc, char *argv[]) {
 	glutMainLoop();                        // glut事件处理循环    
 
 	delete cam;
+	deleteBreadModels();
 
 	return 0;
 }

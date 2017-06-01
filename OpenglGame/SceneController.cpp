@@ -5,9 +5,23 @@ using namespace std;
 
 vector<glm::vec3> boxPosition;
 vector<glm::vec3> boxScale;
+static int boxSum = 0;
+
+vector<Model*> breadSet;
+vector<bool> isBreadEatenSet;
+
+static float angle = 0.0f;
+
+GLfloat LightAmbient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+GLfloat LightDiffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+GLfloat LightPosition[] = { 0.0f, SkyboxSize / 2.f, 0.f, 1.0f };
+GLfloat LightPosition2[] = { -SkyboxSize / 2.f, -SkyboxSize / 2.f, 0.f, 1.0f };
 
 void drawRect(GLuint texture) {
 	glEnable(GL_TEXTURE_2D);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);    //天空盒加环境光
+	glEnable(GL_COLOR_MATERIAL);
+
 	glBindTexture(GL_TEXTURE_2D, texture);  //选择纹理texture[status]   
 	const GLfloat x1 = -0.5, x2 = 0.5;
 	const GLfloat y1 = -0.5, y2 = 0.5;
@@ -20,11 +34,15 @@ void drawRect(GLuint texture) {
 		glVertex2fv(point[i]);
 	}
 	glEnd();
+
+	glDisable(GL_COLOR_MATERIAL);
 	glDisable(GL_TEXTURE_2D);
 }
 
 void drawCube(GLuint texture) {
 	glEnable(GL_TEXTURE_2D);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);    //盒子碰撞器加环境光
+	glEnable(GL_COLOR_MATERIAL);
 	int i, j;
 	const GLfloat x1 = -0.5, x2 = 0.5;
 	const GLfloat y1 = -0.5, y2 = 0.5;
@@ -60,6 +78,8 @@ void drawCube(GLuint texture) {
 		}
 		glEnd();
 	}
+
+	glDisable(GL_COLOR_MATERIAL);
 	glDisable(GL_TEXTURE_2D);
 }
 
@@ -121,66 +141,83 @@ void drawSkybox(GLuint* texture) {
 	glPopMatrix();
 }
 
+void initSingleBoxCollider(glm::vec3 pos, glm::vec3 scalar) {
+	boxPosition.push_back(pos);
+	boxScale.push_back(scalar);
+	boxSum++;
+	isBreadEatenSet.push_back(false);
+}
+
 void initBoxCollidersProperty() {
 	//1-0
-	boxPosition.push_back(glm::vec3(-60.f, -1.0f*roomSizeY / 2.0f + 2.5f, 60.f));
-	boxScale.push_back(glm::vec3(5, 5, 40));
+	initSingleBoxCollider(glm::vec3(-60.f, -1.0f*roomSizeY / 2.0f + 2.5f, 60.f),
+		glm::vec3(5, 5, 40));
 	//2-1
-	boxPosition.push_back(glm::vec3(-70.f, -1.0f*roomSizeY / 2.0f + 7.5f, 40.f));
-	boxScale.push_back(glm::vec3(20, 5, 5));
+	initSingleBoxCollider(glm::vec3(-70.f, -1.0f*roomSizeY / 2.0f + 7.5f, 40.f),
+		glm::vec3(20, 5, 5));
 	//3-2
-	boxPosition.push_back(glm::vec3(-80.f, -1.0f*roomSizeY / 2.0f + 12.5f, 0.f));
-	boxScale.push_back(glm::vec3(5, 5, 80));
+	initSingleBoxCollider(glm::vec3(-80.f, -1.0f*roomSizeY / 2.0f + 12.5f, 0.f),
+		glm::vec3(5, 5, 80));
 	//4-1
-	boxPosition.push_back(glm::vec3(-50.f, -1.0f*roomSizeY / 2.0f + 7.5f, -40.f));
-	boxScale.push_back(glm::vec3(60, 5, 5));
+	initSingleBoxCollider(glm::vec3(-50.f, -1.0f*roomSizeY / 2.0f + 7.5f, -40.f),
+		glm::vec3(60, 5, 5));
 	//5-2
-	boxPosition.push_back(glm::vec3(-20.f, -1.0f*roomSizeY / 2.0f + 12.5f, -20.f));
-	boxScale.push_back(glm::vec3(5, 5, 40));
+	initSingleBoxCollider(glm::vec3(-20.f, -1.0f*roomSizeY / 2.0f + 12.5f, -20.f),
+		glm::vec3(5, 5, 40));
 	//5.1-3
-	boxPosition.push_back(glm::vec3(-30.f, -1.0f*roomSizeY / 2.0f + 17.5f, 0.f));
-	boxScale.push_back(glm::vec3(20, 5, 5));
+	initSingleBoxCollider(glm::vec3(-30.f, -1.0f*roomSizeY / 2.0f + 17.5f, 0.f),
+		glm::vec3(20, 5, 5));
 	//6-4
-	boxPosition.push_back(glm::vec3(-40.f, -1.0f*roomSizeY / 2.0f + 22.5f, 10.f));
-	boxScale.push_back(glm::vec3(5, 5, 20));
+	initSingleBoxCollider(glm::vec3(-40.f, -1.0f*roomSizeY / 2.0f + 22.5f, 10.f),
+		glm::vec3(5, 5, 20));
 	//7-3
-	boxPosition.push_back(glm::vec3(-10.f, -1.0f*roomSizeY / 2.0f + 17.5f, 20.f));
-	boxScale.push_back(glm::vec3(60, 5, 5));
+	initSingleBoxCollider(glm::vec3(-10.f, -1.0f*roomSizeY / 2.0f + 17.5f, 20.f),
+		glm::vec3(60, 5, 5));
 	//8-4
-	boxPosition.push_back(glm::vec3(20.f, -1.0f*roomSizeY / 2.0f + 22.5f, -30.f));
-	boxScale.push_back(glm::vec3(5, 5, 100));
+	initSingleBoxCollider(glm::vec3(20.f, -1.0f*roomSizeY / 2.0f + 22.5f, -30.f),
+		glm::vec3(5, 5, 100));
 	//9-5
-	boxPosition.push_back(glm::vec3(-20.f, -1.0f*roomSizeY / 2.0f + 27.5f, -80.f));
-	boxScale.push_back(glm::vec3(80, 5, 5));
+	initSingleBoxCollider(glm::vec3(-20.f, -1.0f*roomSizeY / 2.0f + 27.5f, -80.f),
+		glm::vec3(80, 5, 5));
 	//10-3
-	boxPosition.push_back(glm::vec3(50.f, -1.0f*roomSizeY / 2.0f + 17.5f, -80.f));
-	boxScale.push_back(glm::vec3(60, 5, 5));
+	initSingleBoxCollider(glm::vec3(50.f, -1.0f*roomSizeY / 2.0f + 17.5f, -80.f),
+		glm::vec3(60, 5, 5));
 	//11-2
-	boxPosition.push_back(glm::vec3(80.f, -1.0f*roomSizeY / 2.0f + 12.5f, -60.f));
-	boxScale.push_back(glm::vec3(5, 5, 40));
+	initSingleBoxCollider(glm::vec3(80.f, -1.0f*roomSizeY / 2.0f + 12.5f, -60.f),
+		glm::vec3(5, 5, 40));
 	//12-1
-	boxPosition.push_back(glm::vec3(60.f, -1.0f*roomSizeY / 2.0f + 7.5f, -40.f));
-	boxScale.push_back(glm::vec3(40, 5, 5));
+	initSingleBoxCollider(glm::vec3(60.f, -1.0f*roomSizeY / 2.0f + 7.5f, -40.f),
+		glm::vec3(40, 5, 5));
 	//13-2
-	boxPosition.push_back(glm::vec3(40.f, -1.0f*roomSizeY / 2.0f + 12.5f, 10.f));
-	boxScale.push_back(glm::vec3(5, 5, 100));
+	initSingleBoxCollider(glm::vec3(40.f, -1.0f*roomSizeY / 2.0f + 12.5f, 10.f),
+		glm::vec3(5, 5, 100));
 	//14-3
-	boxPosition.push_back(glm::vec3(20.f, -1.0f*roomSizeY / 2.0f + 17.5f, 60.f));
-	boxScale.push_back(glm::vec3(40, 5, 5));
+	initSingleBoxCollider(glm::vec3(20.f, -1.0f*roomSizeY / 2.0f + 17.5f, 60.f),
+		glm::vec3(40, 5, 5));
 	//15-2
-	boxPosition.push_back(glm::vec3(-20.f, -1.0f*roomSizeY / 2.0f + 12.5f, 60.f));
-	boxScale.push_back(glm::vec3(40, 5, 5));
+	initSingleBoxCollider(glm::vec3(-20.f, -1.0f*roomSizeY / 2.0f + 12.5f, 60.f),
+		glm::vec3(40, 5, 5));
 	//16-4
-	boxPosition.push_back(glm::vec3(0.f, -1.0f*roomSizeY / 2.0f + 22.5f, 70.f));
-	boxScale.push_back(glm::vec3(5, 5, 20));
+	initSingleBoxCollider(glm::vec3(0.f, -1.0f*roomSizeY / 2.0f + 22.5f, 70.f),
+		glm::vec3(5, 5, 20));
 	//17-5
-	boxPosition.push_back(glm::vec3(40.f, -1.0f*roomSizeY / 2.0f + 27.5f, 80.f));
-	boxScale.push_back(glm::vec3(80, 5, 5));
+	initSingleBoxCollider(glm::vec3(40.f, -1.0f*roomSizeY / 2.0f + 27.5f, 80.f),
+		glm::vec3(80, 5, 5));
 	//18-6
-	boxPosition.push_back(glm::vec3(80.f, -1.0f*roomSizeY / 2.0f + 32.5f, 40.f));
-	boxScale.push_back(glm::vec3(5, 5, 80));
+	initSingleBoxCollider(glm::vec3(80.f, -1.0f*roomSizeY / 2.0f + 32.5f, 40.f),
+		glm::vec3(5, 5, 80));
 
+}
 
+void setBoxColliderBoundary(FPSCamera* cam) {
+	for (int i = 0; i < boxPosition.size(); i++) {
+		cam->setSceneInnerBoundary(boxPosition[i].x - boxScale[i].x / 2.f,
+			boxPosition[i].y - boxScale[i].y / 2.f,
+			boxPosition[i].z - boxScale[i].z / 2.f,
+			boxPosition[i].x + boxScale[i].x / 2.f,
+			boxPosition[i].y + boxScale[i].y / 2.f,
+			boxPosition[i].z + boxScale[i].z / 2.f);
+	}
 }
 
 void drawBoxColliders(GLuint* texture) {
@@ -190,16 +227,74 @@ void drawBoxColliders(GLuint* texture) {
 		glScalef(boxScale[i].x, boxScale[i].y, boxScale[i].z);
 		drawCube(texture[2]);
 		glPopMatrix();
+	}	
+}
+
+
+void initBreadModels() {
+	int breadSum = boxSum;
+
+	Model* myBreadModel = new Model;
+	if (!myBreadModel->importModel("ModelRes/Bread/Bread.obj"))
+		cout << "Import model error!" << endl;
+
+	for (int i = 0; i < breadSum; i++) {
+		breadSet.push_back(myBreadModel);
 	}
 }
 
-void setBoxColliderBoundary(FPSCamera* cam) {
-	for (int i = 0; i < boxPosition.size(); i++) {
-		cam->setSceneInnerBoundary(boxPosition[i].x - boxScale[i].x / 2.f, 
-									boxPosition[i].y - boxScale[i].y / 2.f, 
-									boxPosition[i].z - boxScale[i].z / 2.f, 
-									boxPosition[i].x + boxScale[i].x / 2.f, 
-									boxPosition[i].y + boxScale[i].y / 2.f, 
-									boxPosition[i].z + boxScale[i].z / 2.f);
+void drawBreadModels() {
+	for (int i = 0; i < breadSet.size(); i++) {
+		if (!isBreadEatenSet[i]) {
+			glPushMatrix();
+			glTranslatef(boxPosition[i].x, boxPosition[i].y + 10.f, boxPosition[i].z);
+			glRotatef(angle, 0.f, 1.f, 0.f);
+			glScalef(5.f, 5.f, 5.f);
+			breadSet[i]->renderTheModel(0.5f);
+			glPopMatrix();
+		}
 	}
+	angle += 0.75f;
+}
+
+void deleteBreadModels() {
+	for (int i = 0; i < breadSet.size(); i++)
+		delete breadSet[i];
+}
+
+void detectBreadBeingEaten(FPSCamera* cam) {
+	for (int i = 0; i < breadSet.size(); i++) {
+		if (!isBreadEatenSet[i]) {
+			glm::vec3 breadPos(boxPosition[i].x, boxPosition[i].y + 10.f, boxPosition[i].z);
+			if (cam->detectPlayerEatingBread(breadPos, EatBreadDistance)) {
+				isBreadEatenSet[i] = true;
+				break;
+			}
+		}
+	}
+}
+
+void setupLights() {
+	glClearDepth(1.0f);				// Depth Buffer Setup
+	glEnable(GL_DEPTH_TEST);		// Enables Depth Testing
+	glDepthFunc(GL_LEQUAL);			// The Type Of Depth Test To Do
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+	// 启用光照计算  
+	glEnable(GL_LIGHTING);
+
+	glEnable(GL_LIGHT0);
+	glLightfv(GL_LIGHT0, GL_POSITION, LightPosition);
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+
+	glEnable(GL_LIGHT1);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, LightAmbient);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, LightDiffuse);
+	glLightfv(GL_LIGHT1, GL_POSITION, LightPosition);
+
+	glEnable(GL_LIGHT2);
+	glLightfv(GL_LIGHT2, GL_AMBIENT, LightAmbient);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, LightDiffuse);
+	glLightfv(GL_LIGHT2, GL_POSITION, LightPosition2);
+
 }

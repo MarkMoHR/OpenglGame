@@ -75,6 +75,10 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>D:\Assimp\assimp-3.3.1\samples\DevIL\lib;D:\Assimp\assimp_vs2015\assimp_vs2015\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp.lib;DevIL.lib;ILU.lib;ILUT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -111,12 +115,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="FPSCamera.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="PhysicsEngine.h" />
     <ClInclude Include="SceneController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FPSCamera.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="PhysicsEngine.cpp" />
     <ClCompile Include="SceneController.cpp" />
     <ClCompile Include="texture.cpp" />
