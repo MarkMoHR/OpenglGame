@@ -10,7 +10,7 @@ FPSCamera* cam;
 static int mouseLastPosX = 0;
 static int mouseLastPosY = 0;
 
-GLuint texture[10];
+GLuint texture[8];
 
 void drawScene() {
 	//天空盒
@@ -21,7 +21,7 @@ void drawScene() {
 	glTranslatef(0.0f, -roomSizeY / 2.0f, 0.0f);
 	glRotatef(90, 1, 0, 0);
 	glScalef(roomSizeX, roomSizeZ, 1);
-	drawRect(texture[3]);
+	drawRect(texture[0]);
 	glPopMatrix();
 
 	//箱子  
@@ -47,18 +47,25 @@ void idle() {
 void initLightingAndTexture() {
 	glEnable(GL_DEPTH_TEST);//开启深度测试        
 	glEnable(GL_LIGHTING);  //开启光照模式   
-	glGenTextures(10, texture);
-	loadTex(0, "textures/1.bmp", texture);
-	loadTex(1, "textures/16.bmp", texture);
-	loadTex(2, "textures/14.bmp", texture);
-	loadTex(3, "textures/11.bmp", texture);
+	glGenTextures(8, texture);
+	loadTex(0, "Textures/11.bmp", texture);    //地板
+	loadTex(1, "Textures/14.bmp", texture);    //盒子
 
-	loadTex(4, "textures/Skybox/Sunny_up.bmp", texture);
-	loadTex(5, "textures/Skybox/Sunny_down.bmp", texture);
-	loadTex(6, "textures/Skybox/Sunny_left.bmp", texture);
-	loadTex(7, "textures/Skybox/Sunny_right.bmp", texture);
-	loadTex(8, "textures/Skybox/Sunny_front.bmp", texture);
-	loadTex(9, "textures/Skybox/Sunny_back.bmp", texture);
+	//选择以下任意一种天空盒贴图
+
+	//loadTex(2, "Textures/Skybox/SkyBox2_up.bmp", texture);
+	//loadTex(3, "Textures/Skybox/SkyBox2_down.bmp", texture);
+	//loadTex(4, "Textures/Skybox/SkyBox2_left.bmp", texture);
+	//loadTex(5, "Textures/Skybox/SkyBox2_right.bmp", texture);
+	//loadTex(6, "Textures/Skybox/SkyBox2_front.bmp", texture);
+	//loadTex(7, "Textures/Skybox/SkyBox2_back.bmp", texture);
+
+	loadTex(2, "Textures/Skybox/Sunny_up.bmp", texture);
+	loadTex(3, "Textures/Skybox/Sunny_down.bmp", texture);
+	loadTex(4, "Textures/Skybox/Sunny_left.bmp", texture);
+	loadTex(5, "Textures/Skybox/Sunny_right.bmp", texture);
+	loadTex(6, "Textures/Skybox/Sunny_front.bmp", texture);
+	loadTex(7, "Textures/Skybox/Sunny_back.bmp", texture);
 }
 
 void normalKeyPress(unsigned char key, int x, int y) {

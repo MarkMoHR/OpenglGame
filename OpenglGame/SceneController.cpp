@@ -90,7 +90,7 @@ void drawSkybox(GLuint* texture) {
 	glRotatef(270, 1, 0, 0);
 
 	glScalef(SkyboxSize, SkyboxSize, 1);
-	drawRect(texture[4]);
+	drawRect(texture[2]);
 	glPopMatrix();
 
 	//ÏÂ   
@@ -99,7 +99,7 @@ void drawSkybox(GLuint* texture) {
 	glRotatef(90, 1, 0, 0);
 
 	glScalef(SkyboxSize, SkyboxSize, 1);
-	drawRect(texture[5]);
+	drawRect(texture[3]);
 	glPopMatrix();
 
 	//×ó
@@ -109,7 +109,7 @@ void drawSkybox(GLuint* texture) {
 	glRotatef(180, 0, 0, 1);
 
 	glScalef(SkyboxSize, SkyboxSize, 1);
-	drawRect(texture[6]);
+	drawRect(texture[4]);
 	glPopMatrix();
 
 	//ÓÒ
@@ -119,7 +119,7 @@ void drawSkybox(GLuint* texture) {
 	glRotatef(180, 0, 0, 1);
 
 	glScalef(SkyboxSize, SkyboxSize, 1);
-	drawRect(texture[7]);
+	drawRect(texture[5]);
 	glPopMatrix();
 
 	//Ç°
@@ -128,7 +128,7 @@ void drawSkybox(GLuint* texture) {
 	glRotatef(180, 1, 0, 0);
 
 	glScalef(SkyboxSize, SkyboxSize, 1);
-	drawRect(texture[8]);
+	drawRect(texture[6]);
 	glPopMatrix();
 
 	//ºó
@@ -137,7 +137,7 @@ void drawSkybox(GLuint* texture) {
 	glRotatef(180, 0, 0, 1);
 
 	glScalef(SkyboxSize, SkyboxSize, 1);
-	drawRect(texture[9]);
+	drawRect(texture[7]);
 	glPopMatrix();
 }
 
@@ -225,7 +225,7 @@ void drawBoxColliders(GLuint* texture) {
 		glPushMatrix();
 		glTranslatef(boxPosition[i].x, boxPosition[i].y, boxPosition[i].z);
 		glScalef(boxScale[i].x, boxScale[i].y, boxScale[i].z);
-		drawCube(texture[2]);
+		drawCube(texture[1]);
 		glPopMatrix();
 	}	
 }
