@@ -48,6 +48,8 @@ void FPSCamera::resetWinSize(int w, int h) {
 	winH = h;
 	pratio = (GLfloat)w / (GLfloat)h;
 
+	cout << "winW " << winW << " winH " << winH << endl;
+
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

@@ -13,11 +13,6 @@ static int mouseLastPosY = 0;
 
 GLuint texture[8];
 
-float textAmbient[4] = { 0, 0, 0, 0 };
-float textDiffuse[4] = { 0, 0, 0, 0 };
-float textSpecular[4] = { 0, 0, 0, 0 };
-string testText = "testText!";
-
 void drawScene() {
 
 	//Ìì¿ÕºÐ
@@ -35,19 +30,8 @@ void drawScene() {
 	drawBoxColliders(texture);
 	drawBreadModels();
 
-	glPushMatrix();
-	glm::vec3 uiCanvasCen(cam->cameraPos + cam->getForward() * 1.5f);
-	
-	//cout << "Camera Pos: " << glm::to_string(cam->cameraPos) << endl;
-	//cout << "UI Canvas: " << glm::to_string(UISurfaceCenter) << endl;
-	glColor3f(0, 0, 0);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, textAmbient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, textDiffuse);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, textSpecular);
-	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
-	glRasterPos3f(uiCanvasCen.x, uiCanvasCen.y, uiCanvasCen.z);
-	glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)testText.c_str());
-	glPopMatrix();
+	//ÎÄ×Ö
+	drawUIText(cam);
 
 	glColor3f(1, 1, 1);
 

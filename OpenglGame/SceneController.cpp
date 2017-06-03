@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "SceneController.h"
 #include <iostream>
 #include <vector>
@@ -9,6 +11,7 @@ static int boxSum = 0;
 
 vector<Model*> breadSet;
 vector<bool> isBreadEatenSet;
+static int eatenBreadNum = 0;
 
 static float angle = 0.0f;
 
@@ -268,10 +271,39 @@ void detectBreadBeingEaten(FPSCamera* cam) {
 			glm::vec3 breadPos(boxPosition[i].x, boxPosition[i].y + 10.f, boxPosition[i].z);
 			if (cam->detectPlayerEatingBread(breadPos, EatBreadDistance)) {
 				isBreadEatenSet[i] = true;
+				eatenBreadNum++;
 				break;
 			}
 		}
 	}
+}
+
+
+float textAmbient[4] = { 0, 0, 0, 0 };
+float textDiffuse[4] = { 0, 0, 0, 0 };
+float textSpecular[4] = { 0, 0, 0, 0 };
+string UIText = "Bread: ";
+
+void drawUIText(FPSCamera* cam) {
+	glPushMatrix();
+	glm::vec3 uiCanvasCen(cam->cameraPos + cam->getForward() * 1.5f);
+
+	//cout << "Camera Pos: " << glm::to_string(cam->cameraPos) << endl;
+	//cout << "UI Canvas: " << glm::to_string(UISurfaceCenter) << endl;
+	glColor3f(0, 0, 0);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, textAmbient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, textDiffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, textSpecular);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+	glRasterPos3f(uiCanvasCen.x, uiCanvasCen.y, uiCanvasCen.z);
+
+	char strBuffer[80];
+	const char * UIText1c = UIText.c_str();
+	string UIText2 = " / ";
+	const char * UIText2c = UIText2.c_str();
+	sprintf(strBuffer, "%s%d%s%d", UIText1c, eatenBreadNum, UIText2c, boxSum);
+	glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
+	glPopMatrix();
 }
 
 void setupLights() {

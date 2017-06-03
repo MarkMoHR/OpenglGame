@@ -29,4 +29,6 @@ void deleteBreadModels();      //销毁面包集
 
 void detectBreadBeingEaten(FPSCamera* cam);      //检测面包是否被吃掉
 
+void drawUIText(FPSCamera* cam);             //绘制UI文字
+
 void setupLights();            //设置光照
