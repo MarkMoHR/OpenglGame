@@ -113,6 +113,10 @@ void FPSCamera::updateCameraHoriMovement() {
 	}
 }
 
+glm::vec3 FPSCamera::getForward() {
+	return  -glm::vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
+}
+
 void FPSCamera::updateCameraVertMovement() {
 	physicsEngine->updateCameraVertMovement(cameraPos, targetPos);
 }

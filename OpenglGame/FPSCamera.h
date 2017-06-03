@@ -20,8 +20,13 @@ class FPSCamera {
 
 		void updateCameraMovement();    //每帧绘制的时候更新摄像机移动
 
+		glm::vec3 getForward();
+
 		//根据面包的位置判断是否能吃掉面包
 		bool detectPlayerEatingBread(glm::vec3 breadPos, float dist);
+
+		glm::vec3 cameraPos;
+		glm::vec3 targetPos;
 
 	private:
 		void updateCameraHoriMovement();        //每帧绘制的时候更新摄像机水平方向移动
@@ -37,9 +42,7 @@ class FPSCamera {
 		glm::mat4 viewMatrix;
 		//Lens parameters for the camera
 		GLfloat pfov, pratio, pnear, pfar;
-
-		glm::vec3 cameraPos;
-		glm::vec3 targetPos;
+		
 		//Camera roll, pitch, yaw info.
 		GLfloat roll, pitch, yaw;
 
