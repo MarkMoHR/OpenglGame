@@ -302,9 +302,10 @@ void detectBreadBeingEaten(FPSCamera* cam) {
 }
 
 
-float textAmbient[4] = { 0, 0, 0, 0 };
-float textDiffuse[4] = { 0, 0, 0, 0 };
-float textSpecular[4] = { 0, 0, 0, 0 };
+float textAmbient[4] = { 0, 0, 0, 1 };
+float textDiffuse[4] = { 0, 0, 0, 1 };
+float textSpecular[4] = { 0, 0, 0, 1 };
+float textEmission[4] = { 0, 0, 0, 1 };
 string UIText = "Bread: ";
 
 void drawUIText(FPSCamera* cam, int x, int y) {
@@ -325,6 +326,7 @@ void drawUIText(FPSCamera* cam, int x, int y) {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, textAmbient);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, textDiffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, textSpecular);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, textEmission);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
 	//glRasterPos3f(uiCanvasCen.x, uiCanvasCen.y, uiCanvasCen.z);
 	glRasterPos3f(textPos.x, textPos.y, textPos.z);
