@@ -318,6 +318,7 @@ void drawUIText(FPSCamera* cam, int x, int y) {
 	glm::vec4 textPos = glm::inverse(cam->viewMatrix) *  camCo;
 	textPos = textPos / textPos[3];
 
+	glPushMatrix();
 	//cout << "Camera Pos: " << glm::to_string(cam->cameraPos) << endl;
 	//cout << "UI Canvas: " << glm::to_string(UISurfaceCenter) << endl;
 	glColor3f(0, 0, 0);
@@ -327,7 +328,6 @@ void drawUIText(FPSCamera* cam, int x, int y) {
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
 	//glRasterPos3f(uiCanvasCen.x, uiCanvasCen.y, uiCanvasCen.z);
 	glRasterPos3f(textPos.x, textPos.y, textPos.z);
-
 	char strBuffer[80];
 	const char * UIText1c = UIText.c_str();
 	string UIText2 = " / ";
