@@ -25,10 +25,11 @@ void drawBoxColliders(GLuint* texture);            //绘制盒子
 
 void initBreadModels();        //初始化面包集
 void drawBreadModels();        //绘制面包集
+void playBreadEatenEffect(FPSCamera* cam);
 void deleteBreadModels();      //销毁面包集
 
 void detectBreadBeingEaten(FPSCamera* cam);      //检测面包是否被吃掉
 
-void drawUIText(FPSCamera* cam);             //绘制UI文字
+void drawUIText(FPSCamera* cam, int x, int y);             //绘制UI文字
 
 void setupLights();            //设置光照

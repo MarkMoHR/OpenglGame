@@ -1,8 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "SceneController.h"
+#include "ParticleSystem.h"
 #include <iostream>
 #include <vector>
+#include <glm/gtc/matrix_transform.hpp>
 using namespace std;
 
 vector<glm::vec3> boxPosition;
@@ -10,6 +12,7 @@ vector<glm::vec3> boxScale;
 static int boxSum = 0;
 
 vector<Model*> breadSet;
+vector<ParticleSystem> breadEatenEffectSet;
 vector<bool> isBreadEatenSet;
 static int eatenBreadNum = 0;
 
@@ -244,6 +247,13 @@ void initBreadModels() {
 	for (int i = 0; i < breadSum; i++) {
 		breadSet.push_back(myBreadModel);
 	}
+
+	//Init Bread Eaten Effect
+	for (int i = 0; i < breadSum; i++) {
+		ParticleSystem eaten(150, GravityAcceler);
+		eaten.init();
+		breadEatenEffectSet.push_back(eaten);
+	}
 }
 
 void drawBreadModels() {
@@ -258,6 +268,19 @@ void drawBreadModels() {
 		}
 	}
 	angle += 0.75f;
+}
+
+void playBreadEatenEffect (FPSCamera* cam) {
+	for (int i = 0; i < breadSet.size(); i++) {
+		if (isBreadEatenSet[i]) {
+			glPushMatrix();
+			glm::vec3 pPos = boxPosition[i] + cam->getForward() * 10.f;
+			glTranslatef(pPos.x, pPos.y + 7.f, pPos.z);
+			breadEatenEffectSet[i].simulate(0.01);
+			breadEatenEffectSet[i].render();
+			glPopMatrix();
+		}
+	}
 }
 
 void deleteBreadModels() {
@@ -284,9 +307,16 @@ float textDiffuse[4] = { 0, 0, 0, 0 };
 float textSpecular[4] = { 0, 0, 0, 0 };
 string UIText = "Bread: ";
 
-void drawUIText(FPSCamera* cam) {
-	glPushMatrix();
-	glm::vec3 uiCanvasCen(cam->cameraPos + cam->getForward() * 1.5f);
+void drawUIText(FPSCamera* cam, int x, int y) {
+	glm::mat4 screenScale = glm::scale(glm::mat4(1.0), glm::vec3(1.0 / 600, -1.0 / 600, 1));
+
+	glm::vec4 camCo = screenScale * glm::vec4(x, y, -1.3, 1);
+	//cout << glm::to_string(camCo) << endl;
+	camCo = camCo + glm::vec4(-0.5, 0.5, 0, 0);
+	//cout << glm::to_string(camCo) << endl;
+
+	glm::vec4 textPos = glm::inverse(cam->viewMatrix) *  camCo;
+	textPos = textPos / textPos[3];
 
 	//cout << "Camera Pos: " << glm::to_string(cam->cameraPos) << endl;
 	//cout << "UI Canvas: " << glm::to_string(UISurfaceCenter) << endl;
@@ -295,7 +325,8 @@ void drawUIText(FPSCamera* cam) {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, textDiffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, textSpecular);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
-	glRasterPos3f(uiCanvasCen.x, uiCanvasCen.y, uiCanvasCen.z);
+	//glRasterPos3f(uiCanvasCen.x, uiCanvasCen.y, uiCanvasCen.z);
+	glRasterPos3f(textPos.x, textPos.y, textPos.z);
 
 	char strBuffer[80];
 	const char * UIText1c = UIText.c_str();
@@ -303,6 +334,9 @@ void drawUIText(FPSCamera* cam) {
 	const char * UIText2c = UIText2.c_str();
 	sprintf(strBuffer, "%s%d%s%d", UIText1c, eatenBreadNum, UIText2c, boxSum);
 	glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
+
+	glColor4f(1, 1, 1, 1);
+
 	glPopMatrix();
 }
 

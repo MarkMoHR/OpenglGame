@@ -15,6 +15,9 @@ GLuint texture[8];
 
 void drawScene() {
 
+	//文字
+	drawUIText(cam, 0, 0);
+
 	//天空盒
 	drawSkybox(texture);
 
@@ -29,14 +32,14 @@ void drawScene() {
 	//箱子  
 	drawBoxColliders(texture);
 	drawBreadModels();
+	playBreadEatenEffect(cam);
 
-	//文字
-	drawUIText(cam);
 
 	glColor3f(1, 1, 1);
 
 	cam->updateCameraMovement();
 	detectBreadBeingEaten(cam);
+
 }
 
 void reshape(int width, int height) {

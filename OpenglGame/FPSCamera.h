@@ -28,6 +28,10 @@ class FPSCamera {
 		glm::vec3 cameraPos;
 		glm::vec3 targetPos;
 
+		//Current view matrix
+		glm::mat4 viewMatrix;
+		glm::mat4 projectionMatrix;
+
 	private:
 		void updateCameraHoriMovement();        //每帧绘制的时候更新摄像机水平方向移动
 		void updateCameraVertMovement();        //每帧绘制的时候更新摄像机垂直方向移动
@@ -38,8 +42,7 @@ class FPSCamera {
 
 		bool isWPressing, isSPressing, isAPressing, isDPressing;
 
-		//Current view matrix
-		glm::mat4 viewMatrix;
+
 		//Lens parameters for the camera
 		GLfloat pfov, pratio, pnear, pfar;
 		
