@@ -1,4 +1,4 @@
-ï»¿#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>  
 #include <glm/gtx/string_cast.hpp>
@@ -15,10 +15,10 @@ GLuint texture[8];
 
 void drawScene() {
 
-	//ï¿½ï¿½Õºï¿½
+	//Ìì¿ÕºÐ
 	drawSkybox(texture);
 
-	//ï¿½Ø°ï¿½  
+	//µØ°å  
 	glPushMatrix();
 	glTranslatef(0.0f, -roomSizeY / 2.0f, 0.0f);
 	glRotatef(90, 1, 0, 0);
@@ -26,14 +26,14 @@ void drawScene() {
 	drawRect(texture[0]);
 	glPopMatrix();
 
-	//ï¿½ï¿½ï¿½ï¿½  
+	//Ïä×Ó  
 	drawBoxColliders(texture);
 	drawBreadModels();
 	playBreadEatenEffect(cam);
 
 	glColor3f(1, 1, 1);
 
-	//ï¿½ï¿½ï¿½ï¿½
+	//ÎÄ×Ö
 	drawUIText(cam, 0, 0);
 
 
@@ -43,8 +43,8 @@ void drawScene() {
 }
 
 void reshape(int width, int height) {
-	if (height == 0) {     //ï¿½ï¿½ï¿½ï¿½ß¶ï¿½Îª0 
-		height = 1;        //ï¿½Ã¸ß¶ï¿½Îª1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½Ä¸Îª0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½      
+	if (height == 0) {
+		height = 1;        //ÈÃ¸ß¶ÈÎª1£¨±ÜÃâ³öÏÖ·ÖÄ¸Îª0µÄÏÖÏó£©   
 	}
 
 	cam->resetWinSize(width, height);    
@@ -55,13 +55,13 @@ void idle() {
 }
 
 void initLightingAndTexture() {
-	glEnable(GL_DEPTH_TEST);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È²ï¿½ï¿½ï¿½        
-	glEnable(GL_LIGHTING);  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½   
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
 	glGenTextures(8, texture);
-	loadTex(0, "Textures/11.bmp", texture);    //ï¿½Ø°ï¿½
-	loadTex(1, "Textures/14.bmp", texture);    //ï¿½ï¿½ï¿½ï¿½
+	loadTex(0, "Textures/11.bmp", texture);    //µØ°å
+	loadTex(1, "Textures/14.bmp", texture);    //Ïä×Ó
 
-	//Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Õºï¿½ï¿½ï¿½Í¼
+	//Ñ¡ÔñÒÔÏÂÈÎÒâÒ»ÖÖÌì¿ÕºÐÌùÍ¼
 
 	//loadTex(2, "Textures/Skybox/SkyBox2_up.bmp", texture);
 	//loadTex(3, "Textures/Skybox/SkyBox2_down.bmp", texture);
@@ -86,7 +86,7 @@ void normalKeyUp(unsigned char key, int x, int y) {
 	cam->keyUp(key);
 }
 
-//ï¿½ï¿½ï¿½Õµï¿½ï¿½Ê±
+//Êó±ê¸Õµã»÷Ê±
 void mouseClick(int button, int state, int x, int y) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		mouseLastPosX = x;
@@ -94,9 +94,9 @@ void mouseClick(int button, int state, int x, int y) {
 	}
 }
 
-//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½Ê±
+//Êó±êµã»÷ÇÒÒÆ¶¯Ê±
 void mouseMove(int x, int y) {
-	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¾ï¿½ï¿½ï¿½
+	//Óëµã»÷´¦µÄÏà¶Ô¾àÀë
 	float pitch = (float)(y - mouseLastPosY) * Sensitivity;
 	float yaw = (float)(x - mouseLastPosX) * Sensitivity;
 	mouseLastPosY = y;
@@ -105,19 +105,19 @@ void mouseMove(int x, int y) {
 }
 
 void redraw() {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½ï¿½   
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	drawScene();//ï¿½ï¿½ï¿½Æ³ï¿½ï¿½ï¿½   
-	glutSwapBuffers();//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
+	drawScene();
+	glutSwapBuffers();
 }
 
 void initializeGL() {
 	cam = new FPSCamera();
-	//ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½Ôµ
+	//Ìí¼ÓÅö×²±ßÔµ
 	cam->setSceneOuterBoundary(-roomSizeX / 2.0, -roomSizeZ / 2.0, roomSizeX / 2.0, roomSizeZ / 2.0);
 
 	cam->setSceneInnerBoundary(-roomSizeX / 2.0,  -roomSizeY / 2.0f - 1.f, -roomSizeZ / 2.0,
-		roomSizeX / 2.0, -roomSizeY / 2.0f, roomSizeZ / 2.0);    //ï¿½Ø°ï¿½collider
+		roomSizeX / 2.0, -roomSizeY / 2.0f, roomSizeZ / 2.0);    //µØ°åcollider
 
 	initBoxCollidersProperty();
 	setBoxColliderBoundary(cam);
@@ -139,16 +139,16 @@ int main(int argc, char *argv[]) {
 
 	initializeGL();
 
-	glutDisplayFunc(redraw);               //×¢ï¿½ï¿½ï¿½ï¿½Æ»Øµï¿½ï¿½ï¿½ï¿½ï¿½
-	glutReshapeFunc(reshape);              //×¢ï¿½ï¿½ï¿½Ø»ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½
-	glutKeyboardFunc(normalKeyPress);      //×¢ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½
+	glutDisplayFunc(redraw);
+	glutReshapeFunc(reshape);
+	glutKeyboardFunc(normalKeyPress);
 	glutKeyboardUpFunc(normalKeyUp);
-	glutMouseFunc(mouseClick);             //×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½
-	glutMotionFunc(mouseMove);             //×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½&ï¿½Æ¶ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½
-	glutIdleFunc(idle);                    //×¢ï¿½ï¿½È«ï¿½Ö»Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½       
+	glutMouseFunc(mouseClick);
+	glutMotionFunc(mouseMove);
+	glutIdleFunc(idle);
 
 	initLightingAndTexture();
-	glutMainLoop();                        // glutï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½Ñ­ï¿½ï¿½    
+	glutMainLoop();
 
 	delete cam;
 	deleteBreadModels();
