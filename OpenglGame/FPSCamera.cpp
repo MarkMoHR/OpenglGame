@@ -27,7 +27,8 @@ FPSCamera::FPSCamera() {
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(pfov, pratio, pnear, pfar);
+	projectionMatrix = glm::perspective(pfov, pratio, pnear, pfar);
+	glMultMatrixf((float*)glm::value_ptr(projectionMatrix));
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();

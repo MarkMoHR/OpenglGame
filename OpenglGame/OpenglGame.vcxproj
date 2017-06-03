@@ -119,6 +119,7 @@
   <ItemGroup>
     <ClInclude Include="FPSCamera.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="PhysicsEngine.h" />
     <ClInclude Include="SceneController.h" />
   </ItemGroup>
@@ -126,6 +127,7 @@
     <ClCompile Include="FPSCamera.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="PhysicsEngine.cpp" />
     <ClCompile Include="SceneController.cpp" />
     <ClCompile Include="texture.cpp" />
