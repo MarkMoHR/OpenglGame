@@ -61,7 +61,7 @@ void idle() {
 void initTexture() {
 	glEnable(GL_DEPTH_TEST);
 	glGenTextures(8, texture);
-	loadTex(0, "Textures/11.bmp", texture);    //地板
+	loadTex(0, "Textures/18.bmp", texture);    //地板
 	loadTex(1, "Textures/14.bmp", texture);    //箱子
 
 	//选择以下任意一种天空盒贴图
