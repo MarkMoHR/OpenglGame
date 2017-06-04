@@ -302,13 +302,111 @@ void detectBreadBeingEaten(FPSCamera* cam) {
 }
 
 
-float textAmbient[4] = { 0, 0, 0, 1 };
-float textDiffuse[4] = { 0, 0, 0, 1 };
-float textSpecular[4] = { 0, 0, 0, 1 };
-float textEmission[4] = { 0, 0, 0, 1 };
-string UIText = "Bread: ";
+float whiteAmbient[4] = { 1, 1, 1, 1 };
+float whiteDiffuse[4] = { 1, 1, 1, 1 };
+float whiteSpecular[4] = { 1, 1, 1, 1 };
+float whiteEmission[4] = { 1, 1, 1, 1 };
 
-void drawUIText(FPSCamera* cam, int x, int y) {
+void applyWhiteMaterial() {
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, whiteAmbient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, whiteDiffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, whiteSpecular);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, whiteEmission);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+}
+
+float blackAmbient[4] = { 0, 0, 0, 1 };
+float blackDiffuse[4] = { 0, 0, 0, 1 };
+float blackSpecular[4] = { 0, 0, 0, 1 };
+float blackEmission[4] = { 0, 0, 0, 1 };
+
+void applyBlackMaterial() {
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, blackAmbient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, blackDiffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, blackSpecular);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, blackEmission);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+}
+
+string GameTitle = "Eating Bread Game";
+string GameRule = "Game Rule: ";
+string GameRuleCtrl = "Control:\n   1. Press 'w/a/s/d' to move.\n   2. Press 'space' to jump.\n   3. Use 'mouse' to look around.";
+string GameRuleTarget = "Target:\n    Eat as more bread as possible!";
+string GameStartTitle = "Start";
+
+void drawMenuSceneUIText(FPSCamera* cam) {
+	char strBuffer[200];
+
+	//顶部标题框
+	glPushMatrix();
+	applyWhiteMaterial();
+	glBegin(GL_POLYGON);
+	glVertex2f(cam->cameraPos.x - 15.f, cam->cameraPos.y + 25.f);
+	glVertex2f(cam->cameraPos.x - 15.f, cam->cameraPos.y + 31.f);
+	glVertex2f(cam->cameraPos.x + 15.f, cam->cameraPos.y + 31.f);
+	glVertex2f(cam->cameraPos.x + 15.f, cam->cameraPos.y + 25.f);
+	glEnd();
+	glPopMatrix();
+
+	//顶部标题
+	glPushMatrix();
+	applyBlackMaterial();
+	glRasterPos3f(cam->cameraPos.x - 0.63f, cam->cameraPos.y + 1.5f, cam->cameraPos.z - 5.f);
+	const char * GameTitlec = GameTitle.c_str();
+	sprintf(strBuffer, "%s", GameTitlec);
+	glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
+	glPopMatrix();
+
+	applyWhiteMaterial();
+
+	//游戏规则
+	glPushMatrix();
+	glRasterPos3f(cam->cameraPos.x - 1.2f, cam->cameraPos.y + 0.7f, cam->cameraPos.z - 5.f);
+	const char * GameRulec = GameRule.c_str();
+	sprintf(strBuffer, "%s", GameRulec);
+	glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
+	glPopMatrix();
+
+	//控制
+	glPushMatrix();
+	glRasterPos3f(cam->cameraPos.x - 1.f, cam->cameraPos.y + 0.4f, cam->cameraPos.z - 5.f);
+	const char * GameRuleCtrlc = GameRuleCtrl.c_str();
+	sprintf(strBuffer, "%s", GameRuleCtrlc);
+	glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)strBuffer);
+	glPopMatrix();
+
+	//目标
+	glPushMatrix();
+	glRasterPos3f(cam->cameraPos.x - 1.f, cam->cameraPos.y - 0.4f, cam->cameraPos.z - 5.f);
+	const char * GameRuleTargetc = GameRuleTarget.c_str();
+	sprintf(strBuffer, "%s", GameRuleTargetc);
+	glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)strBuffer);
+	glPopMatrix();
+
+	//Start标题框
+	glPushMatrix();
+	applyWhiteMaterial();
+	glBegin(GL_POLYGON);
+	glVertex2f(cam->cameraPos.x - 6.f, cam->cameraPos.y - 25.f);
+	glVertex2f(cam->cameraPos.x - 6.f, cam->cameraPos.y - 31.f);
+	glVertex2f(cam->cameraPos.x + 6.f, cam->cameraPos.y - 31.f);
+	glVertex2f(cam->cameraPos.x + 6.f, cam->cameraPos.y - 25.f);
+	glEnd();
+	glPopMatrix();
+
+	//Start标题
+	glPushMatrix();
+	applyBlackMaterial();
+	glRasterPos3f(cam->cameraPos.x - 0.15f, cam->cameraPos.y - 1.6f, cam->cameraPos.z - 5.f);
+	const char * GameStartTitlec = GameStartTitle.c_str();
+	sprintf(strBuffer, "%s", GameStartTitlec);
+	glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
+	glPopMatrix();
+}
+
+string GameSceneUIText = "Bread: ";
+
+void drawGameSceneUIText(FPSCamera* cam, int x, int y) {
 	glm::mat4 screenScale = glm::scale(glm::mat4(1.0), glm::vec3(1.0 / 600, -1.0 / 600, 1));
 
 	glm::vec4 camCo = screenScale * glm::vec4(x, y, -1.3, 1);
@@ -322,22 +420,15 @@ void drawUIText(FPSCamera* cam, int x, int y) {
 	glPushMatrix();
 	//cout << "Camera Pos: " << glm::to_string(cam->cameraPos) << endl;
 	//cout << "UI Canvas: " << glm::to_string(UISurfaceCenter) << endl;
-	glColor3f(0, 0, 0);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, textAmbient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, textDiffuse);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, textSpecular);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, textEmission);
-	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+	applyBlackMaterial();
 	//glRasterPos3f(uiCanvasCen.x, uiCanvasCen.y, uiCanvasCen.z);
 	glRasterPos3f(textPos.x, textPos.y, textPos.z);
 	char strBuffer[80];
-	const char * UIText1c = UIText.c_str();
+	const char * UIText1c = GameSceneUIText.c_str();
 	string UIText2 = " / ";
 	const char * UIText2c = UIText2.c_str();
 	sprintf(strBuffer, "%s%d%s%d", UIText1c, eatenBreadNum, UIText2c, boxSum);
 	glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
-
-	glColor4f(1, 1, 1, 1);
 
 	glPopMatrix();
 }

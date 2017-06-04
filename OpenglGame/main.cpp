@@ -6,12 +6,16 @@
 
 #define Sensitivity 0.003
 
+enum GameStatus { MenuScene, GameScene };
+
 FPSCamera* cam;
 
 static int mouseLastPosX = 0;
 static int mouseLastPosY = 0;
 
 GLuint texture[8];
+
+GameStatus gameStatus = MenuScene;
 
 void drawScene() {
 
@@ -34,7 +38,7 @@ void drawScene() {
 	glColor3f(1, 1, 1);
 
 	//文字
-	drawUIText(cam, 0, 0);
+	drawGameSceneUIText(cam, 0, 0);
 
 
 	cam->updateCameraMovement();
@@ -54,9 +58,8 @@ void idle() {
 	glutPostRedisplay();
 }
 
-void initLightingAndTexture() {
+void initTexture() {
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_LIGHTING);
 	glGenTextures(8, texture);
 	loadTex(0, "Textures/11.bmp", texture);    //地板
 	loadTex(1, "Textures/14.bmp", texture);    //箱子
@@ -79,11 +82,13 @@ void initLightingAndTexture() {
 }
 
 void normalKeyPress(unsigned char key, int x, int y) {
-	cam->keyPressed(key);
+	if (gameStatus == GameScene)
+		cam->keyPressed(key);
 }
 
 void normalKeyUp(unsigned char key, int x, int y) {
-	cam->keyUp(key);
+	if (gameStatus == GameScene)
+		cam->keyUp(key);
 }
 
 //鼠标刚点击时
@@ -91,23 +96,37 @@ void mouseClick(int button, int state, int x, int y) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		mouseLastPosX = x;
 		mouseLastPosY = y;
+
+		if (gameStatus == MenuScene) {
+			//这里可以修改成自适应的按钮位置坐标
+			if (252 <= x && x <= 348 && 500 <= y && y <= 548)
+				gameStatus = GameScene;
+			cout << "x " << x << " y " << y << endl;
+		}
 	}
 }
 
 //鼠标点击且移动时
 void mouseMove(int x, int y) {
-	//与点击处的相对距离
-	float pitch = (float)(y - mouseLastPosY) * Sensitivity;
-	float yaw = (float)(x - mouseLastPosX) * Sensitivity;
-	mouseLastPosY = y;
-	mouseLastPosX = x;
-	cam->rotate(pitch, yaw);
+	if (gameStatus == GameScene) {
+		//与点击处的相对距离
+		float pitch = (float)(y - mouseLastPosY) * Sensitivity;
+		float yaw = (float)(x - mouseLastPosX) * Sensitivity;
+		mouseLastPosY = y;
+		mouseLastPosX = x;
+		cam->rotate(pitch, yaw);
+	}
 }
 
 void redraw() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	drawScene();
+	if (gameStatus == MenuScene) {
+		drawMenuSceneUIText(cam);
+	}
+	else {
+		drawScene();
+	}
 	glutSwapBuffers();
 }
 
@@ -147,7 +166,7 @@ int main(int argc, char *argv[]) {
 	glutMotionFunc(mouseMove);
 	glutIdleFunc(idle);
 
-	initLightingAndTexture();
+	initTexture();
 	glutMainLoop();
 
 	delete cam;
