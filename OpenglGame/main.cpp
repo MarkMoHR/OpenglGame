@@ -66,19 +66,19 @@ void initTexture() {
 
 	//选择以下任意一种天空盒贴图
 
-	//loadTex(2, "Textures/Skybox/SkyBox2_up.bmp", texture);
-	//loadTex(3, "Textures/Skybox/SkyBox2_down.bmp", texture);
-	//loadTex(4, "Textures/Skybox/SkyBox2_left.bmp", texture);
-	//loadTex(5, "Textures/Skybox/SkyBox2_right.bmp", texture);
-	//loadTex(6, "Textures/Skybox/SkyBox2_front.bmp", texture);
-	//loadTex(7, "Textures/Skybox/SkyBox2_back.bmp", texture);
+	loadTex(2, "Textures/Skybox/SkyBox2_up.bmp", texture);
+	loadTex(3, "Textures/Skybox/SkyBox2_down.bmp", texture);
+	loadTex(4, "Textures/Skybox/SkyBox2_left.bmp", texture);
+	loadTex(5, "Textures/Skybox/SkyBox2_right.bmp", texture);
+	loadTex(6, "Textures/Skybox/SkyBox2_front.bmp", texture);
+	loadTex(7, "Textures/Skybox/SkyBox2_back.bmp", texture);
 
-	loadTex(2, "Textures/Skybox/Sunny_up.bmp", texture);
-	loadTex(3, "Textures/Skybox/Sunny_down.bmp", texture);
-	loadTex(4, "Textures/Skybox/Sunny_left.bmp", texture);
-	loadTex(5, "Textures/Skybox/Sunny_right.bmp", texture);
-	loadTex(6, "Textures/Skybox/Sunny_front.bmp", texture);
-	loadTex(7, "Textures/Skybox/Sunny_back.bmp", texture);
+	//loadTex(2, "Textures/Skybox/Sunny_up.bmp", texture);
+	//loadTex(3, "Textures/Skybox/Sunny_down.bmp", texture);
+	//loadTex(4, "Textures/Skybox/Sunny_left.bmp", texture);
+	//loadTex(5, "Textures/Skybox/Sunny_right.bmp", texture);
+	//loadTex(6, "Textures/Skybox/Sunny_front.bmp", texture);
+	//loadTex(7, "Textures/Skybox/Sunny_back.bmp", texture);
 }
 
 void normalKeyPress(unsigned char key, int x, int y) {
@@ -99,7 +99,7 @@ void mouseClick(int button, int state, int x, int y) {
 
 		if (gameStatus == MenuScene) {
 			//这里可以修改成自适应的按钮位置坐标
-			if (252 <= x && x <= 348 && 500 <= y && y <= 548)
+			if (245 <= x && x <= 357 && 445 <= y && y <= 493)
 				gameStatus = GameScene;
 			cout << "x " << x << " y " << y << endl;
 		}

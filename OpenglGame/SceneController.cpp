@@ -301,6 +301,18 @@ void detectBreadBeingEaten(FPSCamera* cam) {
 	}
 }
 
+float redAmbient[4] = { 1, 0, 0, 1 };
+float redDiffuse[4] = { 1, 0, 0, 1 };
+float redSpecular[4] = { 1, 0, 0, 1 };
+float redEmission[4] = { 1, 0, 0, 1 };
+
+void applyRedMaterial() {
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, redAmbient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, redDiffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, redSpecular);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, redEmission);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+}
 
 float whiteAmbient[4] = { 1, 1, 1, 1 };
 float whiteDiffuse[4] = { 1, 1, 1, 1 };
@@ -328,11 +340,71 @@ void applyBlackMaterial() {
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
 }
 
-string GameTitle = "Eating Bread Game";
+string GameTitle = "Bread Eating Game";
 string GameRule = "Game Rule: ";
 string GameRuleCtrl = "Control:\n   1. Press 'w/a/s/d' to move.\n   2. Press 'space' to jump.\n   3. Use 'mouse' to look around.";
 string GameRuleTarget = "Target:\n    Eat as more bread as possible!";
 string GameStartTitle = "Start";
+string GameMaker = "——由第26组制作";
+
+void selectFont(int size, int charset, const char* face) {
+	HFONT hFont = CreateFontA(size, 0, 0, 0, FW_MEDIUM, 0, 0, 0,
+		charset, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+		DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, face);
+	HFONT hOldFont = (HFONT)SelectObject(wglGetCurrentDC(), hFont);
+	DeleteObject(hOldFont);
+}
+
+#define MAX_CHAR 128
+void drawEnString(const char* str) {
+	static int isFirstCall = 1;
+	static GLuint lists;
+
+	if (isFirstCall == 1) { // 如果是第一次调用，执行初始化, 为每一个ASCII字符产生一个显示列表
+		isFirstCall = 0;
+
+		// 申请MAX_CHAR个连续的显示列表编号
+		lists = glGenLists(MAX_CHAR);
+
+		// 把每个字符的绘制命令都装到对应的显示列表中
+		wglUseFontBitmaps(wglGetCurrentDC(), 0, MAX_CHAR, lists);
+	}
+	// 调用每个字符对应的显示列表，绘制每个字符
+	for (; *str != '\0'; ++str)
+		glCallList(lists + *str);
+}
+
+void drawCNString(const char* str) {
+	int len, i;
+	wchar_t* wstring;
+	HDC hDC = wglGetCurrentDC();
+	GLuint list = glGenLists(1);
+
+	// 计算字符的个数
+	// 如果是双字节字符的（比如中文字符），两个字节才算一个字符
+	// 否则一个字节算一个字符
+	len = 0;
+	for (i = 0; str[i] != '\0'; ++i) {
+		if (IsDBCSLeadByte(str[i]))
+			++i;
+		++len;
+	}
+
+	// 将混合字符转化为宽字符
+	wstring = (wchar_t*)malloc((len + 1) * sizeof(wchar_t));
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, str, -1, wstring, len);
+	wstring[len] = L'\0';
+
+	// 逐个输出字符
+	for (i = 0; i<len; ++i) {
+		wglUseFontBitmapsW(hDC, wstring[i], 1, list);
+		glCallList(list);
+	}
+
+	// 回收所有临时资源
+	free(wstring);
+	glDeleteLists(list, 1);
+}
 
 void drawMenuSceneUIText(FPSCamera* cam) {
 	char strBuffer[200];
@@ -341,35 +413,33 @@ void drawMenuSceneUIText(FPSCamera* cam) {
 	glPushMatrix();
 	applyWhiteMaterial();
 	glBegin(GL_POLYGON);
-	glVertex2f(cam->cameraPos.x - 15.f, cam->cameraPos.y + 25.f);
-	glVertex2f(cam->cameraPos.x - 15.f, cam->cameraPos.y + 31.f);
-	glVertex2f(cam->cameraPos.x + 15.f, cam->cameraPos.y + 31.f);
-	glVertex2f(cam->cameraPos.x + 15.f, cam->cameraPos.y + 25.f);
+	glVertex2f(cam->cameraPos.x - 18.f, cam->cameraPos.y + 25.f);
+	glVertex2f(cam->cameraPos.x - 18.f, cam->cameraPos.y + 31.f);
+	glVertex2f(cam->cameraPos.x + 18.f, cam->cameraPos.y + 31.f);
+	glVertex2f(cam->cameraPos.x + 18.f, cam->cameraPos.y + 25.f);
 	glEnd();
 	glPopMatrix();
+
+	selectFont(40, ANSI_CHARSET, "Comic Sans MS");
 
 	//顶部标题
 	glPushMatrix();
 	applyBlackMaterial();
-	glRasterPos3f(cam->cameraPos.x - 0.63f, cam->cameraPos.y + 1.5f, cam->cameraPos.z - 5.f);
-	const char * GameTitlec = GameTitle.c_str();
-	sprintf(strBuffer, "%s", GameTitlec);
-	glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
+	glRasterPos3f(cam->cameraPos.x - 0.86f, cam->cameraPos.y + 1.48f, cam->cameraPos.z - 5.f);
+	drawEnString(GameTitle.c_str());
 	glPopMatrix();
 
 	applyWhiteMaterial();
 
 	//游戏规则
 	glPushMatrix();
-	glRasterPos3f(cam->cameraPos.x - 1.2f, cam->cameraPos.y + 0.7f, cam->cameraPos.z - 5.f);
-	const char * GameRulec = GameRule.c_str();
-	sprintf(strBuffer, "%s", GameRulec);
-	glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
+	glRasterPos3f(cam->cameraPos.x - 1.2f, cam->cameraPos.y + 0.8f, cam->cameraPos.z - 5.f);
+	drawEnString(GameRule.c_str());
 	glPopMatrix();
 
-	//控制
+	//控制方式
 	glPushMatrix();
-	glRasterPos3f(cam->cameraPos.x - 1.f, cam->cameraPos.y + 0.4f, cam->cameraPos.z - 5.f);
+	glRasterPos3f(cam->cameraPos.x - 1.f, cam->cameraPos.y + 0.5f, cam->cameraPos.z - 5.f);
 	const char * GameRuleCtrlc = GameRuleCtrl.c_str();
 	sprintf(strBuffer, "%s", GameRuleCtrlc);
 	glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)strBuffer);
@@ -377,31 +447,39 @@ void drawMenuSceneUIText(FPSCamera* cam) {
 
 	//目标
 	glPushMatrix();
-	glRasterPos3f(cam->cameraPos.x - 1.f, cam->cameraPos.y - 0.4f, cam->cameraPos.z - 5.f);
+	glRasterPos3f(cam->cameraPos.x - 1.f, cam->cameraPos.y - 0.3f, cam->cameraPos.z - 5.f);
 	const char * GameRuleTargetc = GameRuleTarget.c_str();
 	sprintf(strBuffer, "%s", GameRuleTargetc);
 	glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)strBuffer);
 	glPopMatrix();
 
-	//Start标题框
+	//Start按钮框
 	glPushMatrix();
 	applyWhiteMaterial();
 	glBegin(GL_POLYGON);
-	glVertex2f(cam->cameraPos.x - 6.f, cam->cameraPos.y - 25.f);
-	glVertex2f(cam->cameraPos.x - 6.f, cam->cameraPos.y - 31.f);
-	glVertex2f(cam->cameraPos.x + 6.f, cam->cameraPos.y - 31.f);
-	glVertex2f(cam->cameraPos.x + 6.f, cam->cameraPos.y - 25.f);
+	glVertex2f(cam->cameraPos.x - 7.f, cam->cameraPos.y - 18.f);
+	glVertex2f(cam->cameraPos.x - 7.f, cam->cameraPos.y - 24.f);
+	glVertex2f(cam->cameraPos.x + 7.f, cam->cameraPos.y - 24.f);
+	glVertex2f(cam->cameraPos.x + 7.f, cam->cameraPos.y - 18.f);
 	glEnd();
 	glPopMatrix();
 
 	//Start标题
 	glPushMatrix();
 	applyBlackMaterial();
-	glRasterPos3f(cam->cameraPos.x - 0.15f, cam->cameraPos.y - 1.6f, cam->cameraPos.z - 5.f);
-	const char * GameStartTitlec = GameStartTitle.c_str();
-	sprintf(strBuffer, "%s", GameStartTitlec);
-	glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
+	glRasterPos3f(cam->cameraPos.x - 0.25f, cam->cameraPos.y - 1.24f, cam->cameraPos.z - 5.f);
+	drawEnString(GameStartTitle.c_str());
 	glPopMatrix();
+
+	
+	glPushMatrix();
+	selectFont(24, GB2312_CHARSET, "楷体");
+	//selectFont(24, GB2312_CHARSET, "仿宋");
+	applyWhiteMaterial();
+	glRasterPos3f(cam->cameraPos.x + 0.5f, cam->cameraPos.y - 1.7f, cam->cameraPos.z - 5.f);
+	drawCNString(GameMaker.c_str());
+	glPopMatrix();
+
 }
 
 string GameSceneUIText = "Bread: ";
@@ -411,26 +489,40 @@ void drawGameSceneUIText(FPSCamera* cam, int x, int y) {
 
 	glm::vec4 camCo = screenScale * glm::vec4(x, y, -1.3, 1);
 	//cout << glm::to_string(camCo) << endl;
-	camCo = camCo + glm::vec4(-0.5, 0.5, 0, 0);
-	//cout << glm::to_string(camCo) << endl;
+	glm::vec4 camCoD = camCo + glm::vec4(-0.48, 0.47, 0, 0);
+	//cout << glm::to_string(camCoD) << endl;
 
-	glm::vec4 textPos = glm::inverse(cam->viewMatrix) *  camCo;
-	textPos = textPos / textPos[3];
+	glm::vec4 textPosD = glm::inverse(cam->viewMatrix) *  camCoD;
+	textPosD = textPosD / textPosD[3];
 
 	glPushMatrix();
 	//cout << "Camera Pos: " << glm::to_string(cam->cameraPos) << endl;
 	//cout << "UI Canvas: " << glm::to_string(UISurfaceCenter) << endl;
 	applyBlackMaterial();
 	//glRasterPos3f(uiCanvasCen.x, uiCanvasCen.y, uiCanvasCen.z);
-	glRasterPos3f(textPos.x, textPos.y, textPos.z);
+	glRasterPos3f(textPosD.x, textPosD.y, textPosD.z);
+
 	char strBuffer[80];
 	const char * UIText1c = GameSceneUIText.c_str();
 	string UIText2 = " / ";
 	const char * UIText2c = UIText2.c_str();
 	sprintf(strBuffer, "%s%d%s%d", UIText1c, eatenBreadNum, UIText2c, boxSum);
-	glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
+	//glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
+	drawEnString(strBuffer);
 
-	glPopMatrix();
+	glPopMatrix(); 
+
+	//胜利，绘制 "Win!"
+	if (eatenBreadNum == boxSum) {
+		glm::vec4 textPos = glm::inverse(cam->viewMatrix) *  camCo;
+		textPos = textPos / textPos[3];
+
+		glPushMatrix();
+		applyRedMaterial();
+		glRasterPos3f(textPos.x, textPos.y, textPos.z);
+		drawEnString("Win!");
+		glPopMatrix();
+	}
 }
 
 void setupLights() {
