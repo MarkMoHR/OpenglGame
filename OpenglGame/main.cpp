@@ -4,7 +4,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include "SceneController.h"
 
-#define Sensitivity 0.003
+#define Sensitivity 0.003    //摄像机漫游敏感度
 
 enum GameStatus { MenuScene, GameScene };
 

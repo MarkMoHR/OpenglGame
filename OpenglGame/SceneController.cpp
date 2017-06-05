@@ -340,13 +340,19 @@ void applyBlackMaterial() {
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
 }
 
+#define FONT_ComicSansMS "Comic Sans MS"
+#define FONT_KaiTi "楷体"
+#define FONT_FangSong "仿宋"
+
 string GameTitle = "Bread Eating Game";
 string GameRule = "Game Rule: ";
 string GameRuleCtrl = "Control:\n   1. Press 'w/a/s/d' to move.\n   2. Press 'space' to jump.\n   3. Use 'mouse' to look around.";
 string GameRuleTarget = "Target:\n    Eat as more bread as possible!";
 string GameStartTitle = "Start";
 string GameMaker = "——由第26组制作";
+string GameVictory = "Win!!";
 
+//选择font
 void selectFont(int size, int charset, const char* face) {
 	HFONT hFont = CreateFontA(size, 0, 0, 0, FW_MEDIUM, 0, 0, 0,
 		charset, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
@@ -355,25 +361,33 @@ void selectFont(int size, int charset, const char* face) {
 	DeleteObject(hOldFont);
 }
 
+//绘制英文文字
 #define MAX_CHAR 128
 void drawEnString(const char* str) {
 	static int isFirstCall = 1;
 	static GLuint lists;
 
-	if (isFirstCall == 1) { // 如果是第一次调用，执行初始化, 为每一个ASCII字符产生一个显示列表
-		isFirstCall = 0;
+	lists = glGenLists(MAX_CHAR);
+	wglUseFontBitmaps(wglGetCurrentDC(), 0, MAX_CHAR, lists);
 
-		// 申请MAX_CHAR个连续的显示列表编号
-		lists = glGenLists(MAX_CHAR);
+	//if (isFirstCall == 1) { // 如果是第一次调用，执行初始化, 为每一个ASCII字符产生一个显示列表
+	//	isFirstCall = 0;
 
-		// 把每个字符的绘制命令都装到对应的显示列表中
-		wglUseFontBitmaps(wglGetCurrentDC(), 0, MAX_CHAR, lists);
-	}
+	//	// 申请MAX_CHAR个连续的显示列表编号
+	//	lists = glGenLists(MAX_CHAR);
+
+	//	// 把每个字符的绘制命令都装到对应的显示列表中
+	//	wglUseFontBitmaps(wglGetCurrentDC(), 0, MAX_CHAR, lists);
+	//}
+
 	// 调用每个字符对应的显示列表，绘制每个字符
 	for (; *str != '\0'; ++str)
 		glCallList(lists + *str);
+
+	glDeleteLists(lists, MAX_CHAR);
 }
 
+//绘制中文文字
 void drawCNString(const char* str) {
 	int len, i;
 	wchar_t* wstring;
@@ -396,7 +410,7 @@ void drawCNString(const char* str) {
 	wstring[len] = L'\0';
 
 	// 逐个输出字符
-	for (i = 0; i<len; ++i) {
+	for (i = 0; i < len; ++i) {
 		wglUseFontBitmapsW(hDC, wstring[i], 1, list);
 		glCallList(list);
 	}
@@ -420,7 +434,7 @@ void drawMenuSceneUIText(FPSCamera* cam) {
 	glEnd();
 	glPopMatrix();
 
-	selectFont(40, ANSI_CHARSET, "Comic Sans MS");
+	selectFont(40, ANSI_CHARSET, FONT_ComicSansMS);
 
 	//顶部标题
 	glPushMatrix();
@@ -431,6 +445,7 @@ void drawMenuSceneUIText(FPSCamera* cam) {
 
 	applyWhiteMaterial();
 
+	selectFont(36, ANSI_CHARSET, FONT_ComicSansMS);
 	//游戏规则
 	glPushMatrix();
 	glRasterPos3f(cam->cameraPos.x - 1.2f, cam->cameraPos.y + 0.8f, cam->cameraPos.z - 5.f);
@@ -464,6 +479,7 @@ void drawMenuSceneUIText(FPSCamera* cam) {
 	glEnd();
 	glPopMatrix();
 
+	selectFont(40, ANSI_CHARSET, FONT_ComicSansMS);
 	//Start标题
 	glPushMatrix();
 	applyBlackMaterial();
@@ -473,8 +489,8 @@ void drawMenuSceneUIText(FPSCamera* cam) {
 
 	
 	glPushMatrix();
-	selectFont(24, GB2312_CHARSET, "楷体");
-	//selectFont(24, GB2312_CHARSET, "仿宋");
+	selectFont(24, GB2312_CHARSET, FONT_KaiTi);
+	//selectFont(24, GB2312_CHARSET, FONT_FangSong);
 	applyWhiteMaterial();
 	glRasterPos3f(cam->cameraPos.x + 0.5f, cam->cameraPos.y - 1.7f, cam->cameraPos.z - 5.f);
 	drawCNString(GameMaker.c_str());
@@ -482,7 +498,13 @@ void drawMenuSceneUIText(FPSCamera* cam) {
 
 }
 
+#define VictoryTextSizeLow 60    //闪烁文字最小字号
+#define VictoryTextSizeUp 200    //闪烁文字最大字号
+#define VictoryTextSizeGap 6     //闪烁文字放缩规模
+
 string GameSceneUIText = "Bread: ";
+static int victoryTextSize = VictoryTextSizeLow;
+int dSize = VictoryTextSizeGap;
 
 void drawGameSceneUIText(FPSCamera* cam, int x, int y) {
 	glm::mat4 screenScale = glm::scale(glm::mat4(1.0), glm::vec3(1.0 / 600, -1.0 / 600, 1));
@@ -492,12 +514,17 @@ void drawGameSceneUIText(FPSCamera* cam, int x, int y) {
 	glm::vec4 camCoD = camCo + glm::vec4(-0.48, 0.47, 0, 0);
 	//cout << glm::to_string(camCoD) << endl;
 
+	//why to add this ??????
+	drawEnString("tt");
+
 	glm::vec4 textPosD = glm::inverse(cam->viewMatrix) *  camCoD;
 	textPosD = textPosD / textPosD[3];
 
 	glPushMatrix();
 	//cout << "Camera Pos: " << glm::to_string(cam->cameraPos) << endl;
 	//cout << "UI Canvas: " << glm::to_string(UISurfaceCenter) << endl;
+
+	selectFont(36, ANSI_CHARSET, FONT_ComicSansMS);
 	applyBlackMaterial();
 	//glRasterPos3f(uiCanvasCen.x, uiCanvasCen.y, uiCanvasCen.z);
 	glRasterPos3f(textPosD.x, textPosD.y, textPosD.z);
@@ -509,19 +536,26 @@ void drawGameSceneUIText(FPSCamera* cam, int x, int y) {
 	sprintf(strBuffer, "%s%d%s%d", UIText1c, eatenBreadNum, UIText2c, boxSum);
 	//glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
 	drawEnString(strBuffer);
-
 	glPopMatrix(); 
 
 	//胜利，绘制 "Win!"
-	if (eatenBreadNum == boxSum) {
+	//if (eatenBreadNum == boxSum) {
+	if (eatenBreadNum == 1) {
 		glm::vec4 textPos = glm::inverse(cam->viewMatrix) *  camCo;
 		textPos = textPos / textPos[3];
 
+		victoryTextSize += dSize;
+		selectFont(victoryTextSize, ANSI_CHARSET, FONT_ComicSansMS);
 		glPushMatrix();
 		applyRedMaterial();
-		glRasterPos3f(textPos.x, textPos.y, textPos.z);
-		drawEnString("Win!");
+		glRasterPos3f(textPos.x - 0.2f, textPos.y, textPos.z);
+		drawEnString(GameVictory.c_str());
 		glPopMatrix();
+
+		if (victoryTextSize >= VictoryTextSizeUp)
+			dSize = -VictoryTextSizeGap;
+		else if (victoryTextSize <= VictoryTextSizeLow)
+			dSize = VictoryTextSizeGap;
 	}
 }
 
