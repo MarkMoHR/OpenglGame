@@ -144,12 +144,12 @@ bool Model::loadTextures(const aiScene* scene, const string modelPath) {
 	return true;
 }
 
-void Model::renderTheModel(float scale = 1.0f) {
+void Model::renderTheModel(float scale = 1.0f, bool isAmbient = true) {
 	glEnable(GL_TEXTURE_2D);
-	recursiveRender(scene, scene->mRootNode, scale);
+	recursiveRender(scene, scene->mRootNode, scale, isAmbient);
 	glDisable(GL_TEXTURE_2D);
 }
-void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale = 1.0f) {
+void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale = 1.0f, bool isAmbient = true) {
 	aiMatrix4x4 mTrans = nd->mTransformation;
 	aiMatrix4x4 m2;
 	aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
@@ -165,7 +165,7 @@ void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, f
 		const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[m]];
 
 		//添加texture
-		applyMaterial(sc->mMaterials[mesh->mMaterialIndex]);
+		applyMaterial(sc->mMaterials[mesh->mMaterialIndex], isAmbient);
 
 
 		if (mesh->mNormals == NULL)
@@ -195,9 +195,15 @@ void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, f
 			}
 
 			glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);    //模型加漫反射光
-			glEnable(GL_COLOR_MATERIAL);
+			
+			const GLfloat edgeColor[] = { 0.f, 1.0f, 1.f, 1.0f };
 			const GLfloat white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 			const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			if (isAmbient) {
+				glColor4fv(edgeColor);
+				glEnable(GL_COLOR_MATERIAL);
+			}
 
 			glBegin(face_mode);
 
@@ -206,9 +212,8 @@ void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, f
 			for (i = 0; i < face->mNumIndices; i++) {
 				int index = face->mIndices[i];
 
-				if (mesh->mColors[0] != NULL)
-					glColor4fv((GLfloat*)&(mesh->mColors[0][index]));
-				if (mesh->mNormals != NULL) {
+				//环境光不加载纹理和法线
+				if (mesh->mNormals != NULL && !isAmbient) {
 					if (mesh->HasTextureCoords(0)) {    //有纹理坐标时
 						glTexCoord2f(mesh->mTextureCoords[0][index].x,
 							1 - mesh->mTextureCoords[0][index].y); //mTextureCoords[channel][vertex]
@@ -219,13 +224,14 @@ void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, f
 			}
 			glEnd();
 
-			glDisable(GL_COLOR_MATERIAL);
+			if (isAmbient)
+				glDisable(GL_COLOR_MATERIAL);
 		}
 	}
 
 	//递归绘制其他子节点
 	for (int n = 0; n < nd->mNumChildren; ++n) {
-		recursiveRender(sc, nd->mChildren[n], scale);
+		recursiveRender(sc, nd->mChildren[n], scale, isAmbient);
 	}
 
 	glPopMatrix();
@@ -245,7 +251,7 @@ void set_float4(float f[4], float a, float b, float c, float d) {
 	f[2] = c;
 	f[3] = d;
 }
-void Model::applyMaterial(const aiMaterial *mtl) {
+void Model::applyMaterial(const aiMaterial *mtl, bool isAmbient) {
 	float c[4];
 
 	GLenum fill_mode;
@@ -265,7 +271,10 @@ void Model::applyMaterial(const aiMaterial *mtl) {
 	if (AI_SUCCESS == mtl->GetTexture(aiTextureType_DIFFUSE, texIndex, &texPath)) {
 		//bind texture
 		unsigned int texId = *(textureIdMap[texPath.data]);
-		glBindTexture(GL_TEXTURE_2D, texId);
+		if (isAmbient)
+			glBindTexture(GL_TEXTURE_2D, 0);
+		else
+			glBindTexture(GL_TEXTURE_2D, texId);
 	}
 
 	set_float4(c, 0.8f, 0.8f, 0.8f, 1.0f);

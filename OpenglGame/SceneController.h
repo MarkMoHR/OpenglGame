@@ -7,9 +7,10 @@
 #define roomSizeY 60.f
 #define roomSizeZ 200.f
 
-#define SkyboxSize 600.f        //天空盒大小
+#define SkyboxSize 600.f             //天空盒大小
 
-#define EatBreadDistance 3.f    //吃掉面包的距离
+#define EatBreadDistance 5.f         //吃掉面包的距离
+#define CloseToBreadDistance 200.f    //靠近面包的距离
 
 void loadTex(int i, char *filename, GLuint* texture);
 

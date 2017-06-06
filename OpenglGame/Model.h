@@ -25,17 +25,17 @@ public:
 
 	bool importModel(const string& pFile);        //加载模型
 
-	void renderTheModel(float scale);             //渲染模型入口
+	void renderTheModel(float scale, bool isAmbient);             //渲染模型入口
 
 private:
 	//加载texture
 	bool loadTextures(const aiScene* scene, const string modelPath);
 
 	//递归渲染模型
-	void recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale);
+	void recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale, bool isAmbient);
 
 	//给模型添加texture
-	void applyMaterial(const aiMaterial *mtl);
+	void applyMaterial(const aiMaterial *mtl, bool isAmbient);
 
 private:
 	const aiScene* scene = NULL;

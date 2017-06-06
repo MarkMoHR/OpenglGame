@@ -25,6 +25,9 @@ class FPSCamera {
 		//根据面包的位置判断是否能吃掉面包
 		bool detectPlayerEatingBread(glm::vec3 breadPos, float dist);
 
+		//判断玩家是否靠近某个面包
+		bool detectPlayerCloseToBread(glm::vec3 breadPos, float dist);
+
 		glm::vec3 cameraPos;
 		glm::vec3 targetPos;
 

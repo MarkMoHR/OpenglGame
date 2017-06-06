@@ -136,6 +136,18 @@ bool FPSCamera::detectPlayerEatingBread(glm::vec3 breadPos, float dist) {
 	return false;
 }
 
+bool FPSCamera::detectPlayerCloseToBread(glm::vec3 breadPos, float dist) {
+	float dx = (breadPos - cameraPos).x;
+	float dy = (breadPos - cameraPos).y;
+	float dz = (breadPos - cameraPos).z;
+	float len = dx * dx + dy * dy + dz * dz;
+	//cout << "length " << len << endl;
+
+	if (len < dist)    //小于一定距离的时候算作靠近
+		return true;
+	return false;
+}
+
 void FPSCamera::keyPressed(const unsigned char key) {
 	switch (key) {
 	case ' ':

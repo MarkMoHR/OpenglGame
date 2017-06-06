@@ -15,13 +15,16 @@ vector<Model*> breadSet;
 vector<ParticleSystem> breadEatenEffectSet;
 vector<bool> isBreadEatenSet;
 static int eatenBreadNum = 0;
+static int closeToBreadIndex = -1;
 
 static float angle = 0.0f;
 
 GLfloat LightAmbient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 GLfloat LightDiffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 GLfloat LightPosition[] = { 0.0f, SkyboxSize / 2.f, 0.f, 1.0f };
-GLfloat LightPosition2[] = { -SkyboxSize / 2.f, -SkyboxSize / 2.f, 0.f, 1.0f };
+GLfloat LightPosition2[] = { -SkyboxSize / 2.f, -SkyboxSize / 2.f, SkyboxSize / 2.f, 1.0f };
+GLfloat LightPosition3[] = { SkyboxSize / 2.f, -SkyboxSize / 2.f, SkyboxSize / 2.f, 1.0f };
+GLfloat LightPosition4[] = { 0.0f, -SkyboxSize / 2.f, -SkyboxSize / 2.f, 1.0f };
 
 void drawRect(GLuint texture) {
 	glEnable(GL_TEXTURE_2D);
@@ -228,6 +231,7 @@ void setBoxColliderBoundary(FPSCamera* cam) {
 
 void drawBoxColliders(GLuint* texture) {
 	for (int i = 0; i < boxPosition.size(); i++) {
+		glStencilMask(0x00);
 		glPushMatrix();
 		glTranslatef(boxPosition[i].x, boxPosition[i].y, boxPosition[i].z);
 		glScalef(boxScale[i].x, boxScale[i].y, boxScale[i].z);
@@ -260,14 +264,39 @@ void drawBreadModels() {
 	for (int i = 0; i < breadSet.size(); i++) {
 		if (!isBreadEatenSet[i]) {
 			glPushMatrix();
+
+			// 设置模板缓冲为可写状态，把较小的箱子放入模板缓冲（设为1）
+			glStencilFunc(GL_ALWAYS, 1, 0xFF);
+			glStencilMask(0xFF);
+
 			glTranslatef(boxPosition[i].x, boxPosition[i].y + 10.f, boxPosition[i].z);
 			glRotatef(angle, 0.f, 1.f, 0.f);
 			glScalef(5.f, 5.f, 5.f);
-			breadSet[i]->renderTheModel(0.5f);
+			breadSet[i]->renderTheModel(0.5f, false);
+			glPopMatrix();
+		}
+
+		//模板检测，绘制边缘
+		if (i == closeToBreadIndex) {
+			glPushMatrix();
+
+			// 设置模板缓冲为不可写状态，只绘制 != 1 的部分
+			glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+			glStencilMask(0x00);
+			glDisable(GL_DEPTH_TEST);    //边框不会被其他物体覆盖
+
+			glTranslatef(boxPosition[i].x, boxPosition[i].y + 9.92f, boxPosition[i].z);
+			glRotatef(angle, 0.f, 1.f, 0.f);
+			glScalef(6.2f, 6.2f, 6.2f);
+			breadSet[i]->renderTheModel(0.5f, true);
+
+			glStencilMask(0xFF);
+			glEnable(GL_DEPTH_TEST);
+
 			glPopMatrix();
 		}
 	}
-	angle += 0.75f;
+	angle += 1.5f;
 }
 
 void playBreadEatenEffect (FPSCamera* cam) {
@@ -292,11 +321,22 @@ void detectBreadBeingEaten(FPSCamera* cam) {
 	for (int i = 0; i < breadSet.size(); i++) {
 		if (!isBreadEatenSet[i]) {
 			glm::vec3 breadPos(boxPosition[i].x, boxPosition[i].y + 10.f, boxPosition[i].z);
-			if (cam->detectPlayerEatingBread(breadPos, EatBreadDistance)) {
-				isBreadEatenSet[i] = true;
-				eatenBreadNum++;
+
+			//先检测是否靠近面包
+			if (cam->detectPlayerCloseToBread(breadPos, CloseToBreadDistance)) {
+				closeToBreadIndex = i;
+
+				//再检测是否能吃掉面包
+				if (cam->detectPlayerEatingBread(breadPos, EatBreadDistance)) {
+					isBreadEatenSet[i] = true;
+					eatenBreadNum++;
+					closeToBreadIndex = -1;
+					break;
+				}
 				break;
 			}
+			else
+				closeToBreadIndex = -1;
 		}
 	}
 }
@@ -540,7 +580,7 @@ void drawGameSceneUIText(FPSCamera* cam, int x, int y) {
 
 	//胜利，绘制 "Win!"
 	//if (eatenBreadNum == boxSum) {
-	if (eatenBreadNum == 1) {
+	if (eatenBreadNum == 3) {
 		glm::vec4 textPos = glm::inverse(cam->viewMatrix) *  camCo;
 		textPos = textPos / textPos[3];
 
@@ -581,5 +621,15 @@ void setupLights() {
 	glLightfv(GL_LIGHT2, GL_AMBIENT, LightAmbient);
 	glLightfv(GL_LIGHT2, GL_DIFFUSE, LightDiffuse);
 	glLightfv(GL_LIGHT2, GL_POSITION, LightPosition2);
+
+	glEnable(GL_LIGHT3);
+	glLightfv(GL_LIGHT3, GL_AMBIENT, LightAmbient);
+	glLightfv(GL_LIGHT3, GL_DIFFUSE, LightDiffuse);
+	glLightfv(GL_LIGHT3, GL_POSITION, LightPosition3);
+
+	glEnable(GL_LIGHT4);
+	glLightfv(GL_LIGHT4, GL_AMBIENT, LightAmbient);
+	glLightfv(GL_LIGHT4, GL_DIFFUSE, LightDiffuse);
+	glLightfv(GL_LIGHT4, GL_POSITION, LightPosition4);
 
 }

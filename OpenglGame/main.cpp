@@ -20,10 +20,13 @@ GameStatus gameStatus = MenuScene;
 void drawScene() {
 
 	//天空盒
+
+	glStencilMask(0x00);
 	drawSkybox(texture);
 
 	//地板  
 	glPushMatrix();
+	glStencilMask(0x00);
 	glTranslatef(0.0f, -roomSizeY / 2.0f, 0.0f);
 	glRotatef(90, 1, 0, 0);
 	glScalef(roomSizeX, roomSizeZ, 1);
@@ -119,12 +122,17 @@ void mouseMove(int x, int y) {
 }
 
 void redraw() {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	
 	if (gameStatus == MenuScene) {
 		drawMenuSceneUIText(cam);
 	}
 	else {
+		//初始化模板检测
+		glEnable(GL_STENCIL_TEST);
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
 		drawScene();
 	}
 	glutSwapBuffers();
@@ -151,7 +159,7 @@ void initializeGL() {
 
 int main(int argc, char *argv[]) {
 	glutInit(&argc, argv);    
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE | GLUT_STENCIL);
 	glutInitWindowPosition(250, 100);
 	glutInitWindowSize(600, 600);
 	int windowHandle = glutCreateWindow("Final project - OpenGL game!");
