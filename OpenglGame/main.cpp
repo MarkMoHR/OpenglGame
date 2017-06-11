@@ -13,14 +13,23 @@ FPSCamera* cam;
 static int mouseLastPosX = 0;
 static int mouseLastPosY = 0;
 
-GLuint texture[8];
+GLuint texture[11];
 
 GameStatus gameStatus = MenuScene;
 
+Shader boxShader;
+
 void drawScene() {
 
+	boxShader.Use();
+	glStencilMask(0x00);
+	glCullFace(GL_FRONT);
+	glEnable(GL_CULL_FACE);
+	drawBoxColliders(boxShader, texture[8], texture[9], texture[10], cam);	//Modern GL
+	glDisable(GL_CULL_FACE);
+	glUseProgram(NULL);
+	
 	//Ìì¿ÕºÐ
-
 	glStencilMask(0x00);
 	drawSkybox(texture);
 
@@ -34,7 +43,7 @@ void drawScene() {
 	glPopMatrix();
 
 	//Ïä×Ó  
-	drawBoxColliders(texture);
+	//drawBoxColliders(texture);
 	drawBreadModels();
 	playBreadEatenEffect(cam);
 
@@ -42,7 +51,6 @@ void drawScene() {
 
 	//ÎÄ×Ö
 	drawGameSceneUIText(cam, 0, 0);
-
 
 	cam->updateCameraMovement();
 	detectBreadBeingEaten(cam);
@@ -63,7 +71,7 @@ void idle() {
 
 void initTexture() {
 	glEnable(GL_DEPTH_TEST);
-	glGenTextures(8, texture);
+	glGenTextures(11, texture);
 	loadTex(0, "Textures/18.bmp", texture);    //µØ°å
 	loadTex(1, "Textures/14.bmp", texture);    //Ïä×Ó
 
@@ -75,6 +83,12 @@ void initTexture() {
 	loadTex(5, "Textures/Skybox/SkyBox2_right.bmp", texture);
 	loadTex(6, "Textures/Skybox/SkyBox2_front.bmp", texture);
 	loadTex(7, "Textures/Skybox/SkyBox2_back.bmp", texture);
+
+	boxShader.Use();
+	loadTex(8, "Textures/19d.bmp", texture);		//Box Diffuse
+	loadTex(9, "Textures/20b.bmp", texture);		//Box Bump
+	loadTex(10,"Textures/21s.bmp", texture);		//Box Specular
+	glUseProgram(NULL);
 
 	//loadTex(2, "Textures/Skybox/Sunny_up.bmp", texture);
 	//loadTex(3, "Textures/Skybox/Sunny_down.bmp", texture);
@@ -139,6 +153,9 @@ void redraw() {
 }
 
 void initializeGL() {
+	glewInit();
+	glewExperimental = GL_TRUE;
+
 	cam = new FPSCamera();
 	//Ìí¼ÓÅö×²±ßÔµ
 	cam->setSceneOuterBoundary(-roomSizeX / 2.0, -roomSizeZ / 2.0, roomSizeX / 2.0, roomSizeZ / 2.0);
@@ -155,6 +172,9 @@ void initializeGL() {
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	boxShader.load("shader.vert", "shader.frag");
+	
 }
 
 int main(int argc, char *argv[]) {
@@ -173,6 +193,10 @@ int main(int argc, char *argv[]) {
 	glutMouseFunc(mouseClick);
 	glutMotionFunc(mouseMove);
 	glutIdleFunc(idle);
+
+	boxShader.Use();
+	initCube(boxShader);
+	glUseProgram(NULL);
 
 	initTexture();
 	glutMainLoop();

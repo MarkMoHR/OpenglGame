@@ -4,7 +4,7 @@
 
 #include <glm/gtx/string_cast.hpp>
 
-float pShininess = 96;
+float pShininess = 16;
 float pemit[3][4] = { { 1, 0.62, 0.114, 1 }, { 1, 0.843, 0.114, 1 }, { 1, 0.137, 0.114, 1 } };
 
 void ParticleSystem::init()
@@ -43,13 +43,6 @@ void ParticleSystem::aging(float dt) {
 		particles[i].age += dt;
 		//Age out then die
 		if (particles[i].age > particles[i].life) {
-			//particles[i].position = glm::vec3(0, 0, 0);
-			//particles[i].age = 0;
-			//particles[i].veclocity = glm::vec3(
-			//	rand()%30 - 15,
-			//	rand()%30 - 11,
-			//	rand()%30 - 15
-			//);
 			particles.erase(particles.begin() + i);
 		}
 	}
@@ -83,14 +76,12 @@ void ParticleSystem::render() {
 		Particle& p = particles[i];
 		float alpha = 1 - p.age / p.life;	//The older the dimmer
 		//std::cout << p.color.r << " " << p.color.g << " " << p.color.b << std::endl;
-		float ambient[4] = { 0.1, 0.1, 0.1, alpha };
-		float diffuse[4] = { 0.3, 0.3, 0.3, alpha };
+		float ambient[4] = { 0.05, 0.05, 0.05, alpha };
+		float diffuse[4] = { p.color[0], p.color[1], p.color[2], alpha };
 		float specular[4] = { 0.7, 0.7, 0.7, alpha };
-		float emit[4] = { p.color[0], p.color[1], p.color[2], alpha };
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emit);
 		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, pShininess);
 		//d::cout << alpha << std::endl;
 		glPushMatrix();
