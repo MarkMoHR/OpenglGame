@@ -50,7 +50,7 @@ void drawScene() {
 	glColor3f(1, 1, 1);
 
 	//ÎÄ×Ö
-	drawGameSceneUIText(cam, 0, 0);
+	drawGameSceneUIText(cam, 50, 550);
 
 	cam->updateCameraMovement();
 	detectBreadBeingEaten(cam);

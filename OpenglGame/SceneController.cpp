@@ -494,7 +494,7 @@ void initBreadModels() {
 
 	//Init Bread Eaten Effect
 	for (int i = 0; i < breadSum; i++) {
-		ParticleSystem eaten(150, GravityAcceler);
+		ParticleSystem eaten(80, GravityAcceler);
 		eaten.init();
 		breadEatenEffectSet.push_back(eaten);
 	}
@@ -639,6 +639,11 @@ void selectFont(int size, int charset, const char* face) {
 		DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, face);
 	HFONT hOldFont = (HFONT)SelectObject(wglGetCurrentDC(), hFont);
 	DeleteObject(hOldFont);
+}
+
+vector<GLuint> listOfTexts;
+void initEnString(const char* str) {
+
 }
 
 //绘制英文文字
@@ -786,28 +791,39 @@ string GameSceneUIText = "Bread: ";
 static int victoryTextSize = VictoryTextSizeLow;
 int dSize = VictoryTextSizeGap;
 
+#include <glm/gtx/string_cast.hpp>
+bool once = false;
+void debugOnce(bool& once, glm::mat3 d) {
+	if (!once) {
+		cout << glm::to_string(d) << endl;
+		once = true;
+	}
+}
 void drawGameSceneUIText(FPSCamera* cam, int x, int y) {
-	glm::mat4 screenScale = glm::scale(glm::mat4(1.0), glm::vec3(1.0 / 600, -1.0 / 600, 1));
 
-	glm::vec4 camCo = screenScale * glm::vec4(x, y, -1.3, 1);
-	//cout << glm::to_string(camCo) << endl;
-	glm::vec4 camCoD = camCo + glm::vec4(-0.48, 0.47, 0, 0);
-	//cout << glm::to_string(camCoD) << endl;
+	glm::mat3 vpMatI(
+		300, 0, 300,
+		0, 300, 300,
+		0, 0, 1
+	);
+
+	vpMatI = glm::inverse(vpMatI);
+	glm::vec3 world = glm::transpose(vpMatI) * glm::vec3(x, y, 1);
+	debugOnce(once, vpMatI);
 
 	//why to add this ??????
 	drawEnString("tt");
 
-	glm::vec4 textPosD = glm::inverse(cam->viewMatrix) *  camCoD;
-	textPosD = textPosD / textPosD[3];
-
 	glPushMatrix();
-	//cout << "Camera Pos: " << glm::to_string(cam->cameraPos) << endl;
-	//cout << "UI Canvas: " << glm::to_string(UISurfaceCenter) << endl;
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-1, 1, -1, 1, 0, 2);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
 	selectFont(36, ANSI_CHARSET, FONT_ComicSansMS);
 	applyBlackMaterial();
-	//glRasterPos3f(uiCanvasCen.x, uiCanvasCen.y, uiCanvasCen.z);
-	glRasterPos3f(textPosD.x, textPosD.y, textPosD.z);
+	glRasterPos3f(world[0], world[1], 0);
 
 	char strBuffer[80];
 	const char * UIText1c = GameSceneUIText.c_str();
@@ -816,19 +832,18 @@ void drawGameSceneUIText(FPSCamera* cam, int x, int y) {
 	sprintf(strBuffer, "%s%d%s%d", UIText1c, eatenBreadNum, UIText2c, boxSum);
 	//glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)strBuffer);
 	drawEnString(strBuffer);
-	glPopMatrix(); 
+
 
 	//胜利，绘制 "Win!"
 	//if (eatenBreadNum == boxSum) {
 	if (eatenBreadNum == 3) {
-		glm::vec4 textPos = glm::inverse(cam->viewMatrix) *  camCo;
-		textPos = textPos / textPos[3];
 
 		victoryTextSize += dSize;
 		selectFont(victoryTextSize, ANSI_CHARSET, FONT_ComicSansMS);
 		glPushMatrix();
 		applyRedMaterial();
-		glRasterPos3f(textPos.x - 0.2f, textPos.y, textPos.z);
+		
+		glRasterPos3f(-0.5, 0, 0);
 		drawEnString(GameVictory.c_str());
 		glPopMatrix();
 
@@ -837,6 +852,14 @@ void drawGameSceneUIText(FPSCamera* cam, int x, int y) {
 		else if (victoryTextSize <= VictoryTextSizeLow)
 			dSize = VictoryTextSizeGap;
 	}
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMultMatrixf(glm::value_ptr(cam->projectionMatrix));
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glMultMatrixf(glm::value_ptr(cam->viewMatrix));
+	glPopMatrix();
 }
 
 void setupLights() {

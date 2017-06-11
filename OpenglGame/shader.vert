@@ -42,10 +42,10 @@ void main()
 	
     mat3 normalMatrix = transpose(inverse(mat3(projection * view * model)));
 	vec3 T = normalize(normalMatrix * tangent);
-	vec3 B = normalize(normalMatrix * bitangent);
+	//vec3 B = normalize(normalMatrix * bitangent);
 	vec3 N = normalize(normalMatrix * normal);
 	T = normalize(T - dot(T, N) * N);
-	//vec3 B = cross(N, T);
+	vec3 B = cross(N, T);
     
 	mat3 TBN = transpose(mat3(T, B, N));
 	
