@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 using namespace std;
 
 vector<glm::vec3> boxPosition;
@@ -35,7 +37,7 @@ void drawRect(GLuint texture) {
 	const GLfloat x1 = -0.5, x2 = 0.5;
 	const GLfloat y1 = -0.5, y2 = 0.5;
 	const GLfloat point[4][2] = { { x1,y1 },{ x1,y2 },{ x2,y2 },{ x2,y1 } };
-	int dir[4][2] = { { 1,1 },{ 1,0 },{ 0,0 },{ 0,1 } };
+	int dir[4][2] = { { 1,0 },{ 1,1 },{ 0,1 },{ 0,0 } };
 	glBegin(GL_QUADS);
 
 	for (int i = 0; i < 4; i++) {
@@ -43,9 +45,125 @@ void drawRect(GLuint texture) {
 		glVertex2fv(point[i]);
 	}
 	glEnd();
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glDisable(GL_COLOR_MATERIAL);
 	glDisable(GL_TEXTURE_2D);
+}
+
+struct Vertex {
+	glm::vec3 pos;
+	glm::vec3 norm;
+	glm::vec2 texC;
+
+	Vertex(glm::vec3 p, glm::vec3 n, glm::vec2 t) {
+		pos = p;	norm = n;	texC = t;
+	}
+};
+
+GLuint CubeVAO, CubeVBO, CubeEBO;
+vector<Vertex> CubeVertices;
+vector<unsigned int> CubeIndices = {
+	0, 1, 2, 0, 2 ,3,		//Front
+	4, 5, 6, 4, 6, 7,		//Right
+	8, 9, 10, 8 ,10, 11,	//Back
+	12, 13, 14, 12, 14, 15,	//Left
+	16, 17, 18, 16, 18, 19,	//Top
+	20, 21, 22, 20, 22, 23	//Bottom
+};
+
+void initCube() {
+
+	const GLfloat x = 0.5;
+	const GLfloat y = 0.5;
+	const GLfloat z = 0.5;
+
+	//Front
+	CubeVertices.push_back(Vertex(glm::vec3(x, y, z), glm::vec3(0, 0, 1), glm::vec2(1, 0)));
+	CubeVertices.push_back(Vertex(glm::vec3(x, -y, z), glm::vec3(0, 0, 1), glm::vec2(1, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, -y, z), glm::vec3(0, 0, 1), glm::vec2(0, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, y, z), glm::vec3(0, 0, 1), glm::vec2(0, 0)));
+
+	//Right
+	CubeVertices.push_back(Vertex(glm::vec3(x, y, z), glm::vec3(1, 0, 0), glm::vec2(0, 0)));
+	CubeVertices.push_back(Vertex(glm::vec3(x, y, -z), glm::vec3(1, 0, 0), glm::vec2(1, 0)));
+	CubeVertices.push_back(Vertex(glm::vec3(x, -y, -z), glm::vec3(1, 0, 0), glm::vec2(1, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(x, -y, z), glm::vec3(1, 0, 0), glm::vec2(0, 1)));
+	
+	//Top
+	CubeVertices.push_back(Vertex(glm::vec3(x, y, z), glm::vec3(0, 1, 0), glm::vec2(0, 0)));
+	CubeVertices.push_back(Vertex(glm::vec3(x, y, -z), glm::vec3(0, 1, 0), glm::vec2(1, 0)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, y, -z), glm::vec3(0, 1, 0), glm::vec2(1, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, y, z), glm::vec3(0, 1, 0), glm::vec2(0, 1)));
+
+	//Back
+	CubeVertices.push_back(Vertex(glm::vec3(-x, -y, -z), glm::vec3(0, 0, -1), glm::vec2(1, 0)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, y, -z), glm::vec3(0, 0, -1), glm::vec2(1, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(x, y, -z), glm::vec3(0, 0, -1), glm::vec2(0, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(x, -y, -z), glm::vec3(0, 0, -1), glm::vec2(0, 0)));
+	
+	//Left
+	CubeVertices.push_back(Vertex(glm::vec3(-x, -y, -z), glm::vec3(-1, 0, 0), glm::vec2(0, 0)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, -y, z), glm::vec3(-1, 0, 0), glm::vec2(1, 0)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, y, z), glm::vec3(-1, 0, 0), glm::vec2(1, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, y, -z), glm::vec3(-1, 0, 0), glm::vec2(0, 1)));
+
+	//Bottom
+	CubeVertices.push_back(Vertex(glm::vec3(-x, -y, -z), glm::vec3(0, -1, 0), glm::vec2(0, 0)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, -y, z), glm::vec3(0, -1, 0), glm::vec2(1, 0)));
+	CubeVertices.push_back(Vertex(glm::vec3(x, -y, z), glm::vec3(0, -1, 0), glm::vec2(1, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(x, -y, -z), glm::vec3(0, -1, 0), glm::vec2(0, 1)));
+
+	glGenVertexArrays(1, &CubeVAO);
+	glGenBuffers(1, &CubeVBO);
+	glGenBuffers(1, &CubeEBO);
+
+	glBindVertexArray(CubeVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, CubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * CubeVertices.size() , &CubeVertices[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, CubeEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * CubeIndices.size(), &CubeIndices[0], GL_STATIC_DRAW);
+
+	//Position
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+
+	//Normal
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, norm));
+
+	//Tex2D
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texC));
+
+	glBindVertexArray(0);
+}
+
+void drawCube(Shader shader, GLuint diffuse, GLuint bump) {
+
+	//Textures
+	glActiveTexture(GL_TEXTURE0);	//0th texture unit
+	glUniform1i(glGetUniformLocation(shader.Program, "diffuse_map"), 0);	//Bind "diffuse_map" in shader to 0th texture unit.
+	glBindTexture(GL_TEXTURE_2D, diffuse);	//Bind texture to texture unit.
+
+	glActiveTexture(GL_TEXTURE1);
+	glUniform1i(glGetUniformLocation(shader.Program, "bump_map"), 1);
+	glBindTexture(GL_TEXTURE_2D, bump);
+
+	//Draw
+	glBindVertexArray(CubeVAO);
+	glDrawElements(GL_TRIANGLES, CubeIndices.size(), GL_UNSIGNED_INT, &CubeIndices[0]);
+	glBindVertexArray(0);
+
+	//Release Textures
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 }
 
 void drawCube(GLuint texture) {
@@ -79,10 +197,15 @@ void drawCube(GLuint texture) {
 	};
 
 	for (i = 0; i < 6; i++) {
+		glm::vec3 v1(point[i][0][0], point[i][0][1], point[i][0][2]);
+		glm::vec3 v2(point[i][1][0], point[i][1][1], point[i][1][2]);
+		glm::vec3 normal = glm::normalize(glm::cross(v1, v2));
+
 		glBindTexture(GL_TEXTURE_2D, texture);
 		glBegin(GL_QUADS);
 		for (j = 0; j < 4; j++) {
 			glTexCoord2iv(dir[i][j]);
+			glNormal3fv(glm::value_ptr(normal));
 			glVertex3fv(point[i][j]);
 		}
 		glEnd();
@@ -227,6 +350,65 @@ void setBoxColliderBoundary(FPSCamera* cam) {
 			boxPosition[i].y + boxScale[i].y / 2.f,
 			boxPosition[i].z + boxScale[i].z / 2.f);
 	}
+}
+
+void drawBoxColliders(Shader shader, GLuint diffuse, GLuint bump, FPSCamera* cam) {
+
+	shader.Use();
+	glStencilMask(0x00);
+
+	glUniformMatrix4fv(
+		glGetUniformLocation(shader.Program, "lightPos"),
+		3,
+		GL_FALSE,
+		LightPosition
+	);
+
+	glUniformMatrix4fv(
+		glGetUniformLocation(shader.Program, "viewPos"),
+		3,
+		GL_FALSE,
+		glm::value_ptr(cam->cameraPos)
+	);
+
+	//Projection does not change
+	glUniformMatrix4fv(
+		glGetUniformLocation(shader.Program, "Projection"),
+		16,
+		GL_FALSE,
+		glm::value_ptr(cam->projectionMatrix)
+	);
+
+	for (int i = 0; i < boxPosition.size(); i++) {
+
+		glm::mat4 boxPos = glm::translate(glm::mat4(1.0), glm::vec3(boxPosition[i].x, boxPosition[i].y, boxPosition[i].z));
+		glm::mat4 boxScl = glm::scale(glm::mat4(1.0), glm::vec3(boxScale[i].x, boxScale[i].y, boxScale[i].z));
+
+		glUniformMatrix4fv(
+			glGetUniformLocation(shader.Program, "Model"),
+			16,
+			GL_FALSE,
+			glm::value_ptr(boxScl * boxPos)
+		);
+
+		glUniformMatrix4fv(
+			glGetUniformLocation(shader.Program, "View"),
+			16,
+			GL_FALSE,
+			glm::value_ptr(cam->viewMatrix)
+		);
+
+		drawCube(shader, diffuse, bump);
+	}
+
+	//Wipe your ass after dump
+	glUseProgram(NULL);
+	setupLights();
+	glEnable(GL_TEXTURE_2D);
+
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 }
 
 void drawBoxColliders(GLuint* texture) {

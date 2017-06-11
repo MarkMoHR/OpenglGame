@@ -2,7 +2,8 @@
 
 #include <stdio.h>  
 #include <windows.h>  
-#include "SceneController.h"  
+#include "SceneController.h" 
+#include <soil\SOIL.h>
 #define BITMAP_ID 0x4D42   
 
 //读纹理图片    
@@ -63,7 +64,9 @@ void loadTex(int i, char *filename, GLuint* texture) {
 	BITMAPINFOHEADER bitmapInfoHeader;                                 // bitmap信息头    
 	unsigned char*   bitmapData;                                       // 纹理数据    
 
-	bitmapData = LoadBitmapFile(filename, &bitmapInfoHeader);
+	//bitmapData = LoadBitmapFile(filename, &bitmapInfoHeader);
+	int width, height;
+	bitmapData = SOIL_load_image(filename, &width, &height, 0, SOIL_LOAD_RGB);
 	glBindTexture(GL_TEXTURE_2D, texture[i]);
 	// 指定当前纹理的放大/缩小过滤方式    
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -72,8 +75,8 @@ void loadTex(int i, char *filename, GLuint* texture) {
 	glTexImage2D(GL_TEXTURE_2D,
 		0,         //mipmap层次(通常为，表示最上层)     
 		GL_RGB,    //我们希望该纹理有红、绿、蓝数据    
-		bitmapInfoHeader.biWidth, //纹理宽带，必须是n，若有边框+2     
-		bitmapInfoHeader.biHeight, //纹理高度，必须是n，若有边框+2     
+		width, //纹理宽带，必须是n，若有边框+2     
+		height, //纹理高度，必须是n，若有边框+2     
 		0, //边框(0=无边框, 1=有边框)     
 		GL_RGB,    //bitmap数据的格式    
 		GL_UNSIGNED_BYTE, //每个颜色数据的类型    
