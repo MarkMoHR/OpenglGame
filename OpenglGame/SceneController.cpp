@@ -505,7 +505,7 @@ void drawBreadModels() {
 		if (!isBreadEatenSet[i]) {
 			glPushMatrix();
 
-			// 设置模板缓冲为可写状态，把较小的箱子放入模板缓冲（设为1）
+			// 设置模板缓冲为可写状态，把较小的面包放入模板缓冲（设为1）
 			glStencilFunc(GL_ALWAYS, 1, 0xFF);
 			glStencilMask(0xFF);
 

@@ -76,8 +76,8 @@
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>D:\Assimp\assimp-3.3.1\samples\DevIL\lib;D:\Assimp\assimp_vs2015\assimp_vs2015\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp.lib;DevIL.lib;ILU.lib;ILUT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\CodingEnvironment\glew-2.0.0\lib\Debug\Win32;D:\CodingEnvironment\Simple OpenGL Image Library\lib;D:\Assimp\assimp-3.3.1\samples\DevIL\lib;D:\Assimp\assimp_vs2015\assimp_vs2015\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp.lib;DevIL.lib;ILU.lib;ILUT.lib;SOIL.lib;glew32d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
