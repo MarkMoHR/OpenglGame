@@ -406,9 +406,27 @@ void setBoxColliderBoundary(FPSCamera* cam) {
 void drawBoxColliders(Shader shader, GLuint diffuse, GLuint bump, GLuint spec, FPSCamera* cam) {
 
 	glUniform3fv(
-		glGetUniformLocation(shader.Program, "lightPos"),
+		glGetUniformLocation(shader.Program, "lightPos1"),
 		1,
 		LightPosition
+	);
+
+	glUniform3fv(
+		glGetUniformLocation(shader.Program, "lightPos2"),
+		1,
+		LightPosition2
+	);
+
+	glUniform3fv(
+		glGetUniformLocation(shader.Program, "lightPos3"),
+		1,
+		LightPosition3
+	);
+
+	glUniform3fv(
+		glGetUniformLocation(shader.Program, "lightPos4"),
+		1,
+		LightPosition4
 	);
 
 	glUniform3fv(
