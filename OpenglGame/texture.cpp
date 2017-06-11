@@ -68,7 +68,9 @@ void loadTex(int i, char *filename, GLuint* texture) {
 	int width, height;
 	bitmapData = SOIL_load_image(filename, &width, &height, 0, SOIL_LOAD_RGB);
 	glBindTexture(GL_TEXTURE_2D, texture[i]);
-	// 指定当前纹理的放大/缩小过滤方式    
+	// 指定当前纹理的放大/缩小过滤方式   
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
@@ -82,4 +84,13 @@ void loadTex(int i, char *filename, GLuint* texture) {
 		GL_UNSIGNED_BYTE, //每个颜色数据的类型    
 		bitmapData);    //bitmap数据指针    
 
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+	//glGenerateMipmap(GL_TEXTURE_2D);
+
+	SOIL_free_image_data(bitmapData);
+
+	//glActiveTexture(GL_TEXTURE0 + i);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }

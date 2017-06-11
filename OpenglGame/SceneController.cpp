@@ -55,6 +55,8 @@ struct Vertex {
 	glm::vec3 pos;
 	glm::vec3 norm;
 	glm::vec2 texC;
+	glm::vec3 tangent;
+	glm::vec3 bitangent;
 
 	Vertex(glm::vec3 p, glm::vec3 n, glm::vec2 t) {
 		pos = p;	norm = n;	texC = t;
@@ -72,7 +74,7 @@ vector<unsigned int> CubeIndices = {
 	20, 21, 22, 20, 22, 23	//Bottom
 };
 
-void initCube() {
+void initCube(Shader shader) {
 
 	const GLfloat x = 0.5;
 	const GLfloat y = 0.5;
@@ -92,27 +94,61 @@ void initCube() {
 	
 	//Top
 	CubeVertices.push_back(Vertex(glm::vec3(x, y, z), glm::vec3(0, 1, 0), glm::vec2(0, 0)));
-	CubeVertices.push_back(Vertex(glm::vec3(x, y, -z), glm::vec3(0, 1, 0), glm::vec2(1, 0)));
-	CubeVertices.push_back(Vertex(glm::vec3(-x, y, -z), glm::vec3(0, 1, 0), glm::vec2(1, 1)));
 	CubeVertices.push_back(Vertex(glm::vec3(-x, y, z), glm::vec3(0, 1, 0), glm::vec2(0, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, y, -z), glm::vec3(0, 1, 0), glm::vec2(1, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(x, y, -z), glm::vec3(0, 1, 0), glm::vec2(1, 0)));
 
 	//Back
 	CubeVertices.push_back(Vertex(glm::vec3(-x, -y, -z), glm::vec3(0, 0, -1), glm::vec2(1, 0)));
-	CubeVertices.push_back(Vertex(glm::vec3(-x, y, -z), glm::vec3(0, 0, -1), glm::vec2(1, 1)));
-	CubeVertices.push_back(Vertex(glm::vec3(x, y, -z), glm::vec3(0, 0, -1), glm::vec2(0, 1)));
 	CubeVertices.push_back(Vertex(glm::vec3(x, -y, -z), glm::vec3(0, 0, -1), glm::vec2(0, 0)));
+	CubeVertices.push_back(Vertex(glm::vec3(x, y, -z), glm::vec3(0, 0, -1), glm::vec2(0, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, y, -z), glm::vec3(0, 0, -1), glm::vec2(1, 1)));
 	
 	//Left
 	CubeVertices.push_back(Vertex(glm::vec3(-x, -y, -z), glm::vec3(-1, 0, 0), glm::vec2(0, 0)));
-	CubeVertices.push_back(Vertex(glm::vec3(-x, -y, z), glm::vec3(-1, 0, 0), glm::vec2(1, 0)));
-	CubeVertices.push_back(Vertex(glm::vec3(-x, y, z), glm::vec3(-1, 0, 0), glm::vec2(1, 1)));
 	CubeVertices.push_back(Vertex(glm::vec3(-x, y, -z), glm::vec3(-1, 0, 0), glm::vec2(0, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, y, z), glm::vec3(-1, 0, 0), glm::vec2(1, 1)));
+	CubeVertices.push_back(Vertex(glm::vec3(-x, -y, z), glm::vec3(-1, 0, 0), glm::vec2(1, 0)));
 
 	//Bottom
 	CubeVertices.push_back(Vertex(glm::vec3(-x, -y, -z), glm::vec3(0, -1, 0), glm::vec2(0, 0)));
 	CubeVertices.push_back(Vertex(glm::vec3(-x, -y, z), glm::vec3(0, -1, 0), glm::vec2(1, 0)));
 	CubeVertices.push_back(Vertex(glm::vec3(x, -y, z), glm::vec3(0, -1, 0), glm::vec2(1, 1)));
 	CubeVertices.push_back(Vertex(glm::vec3(x, -y, -z), glm::vec3(0, -1, 0), glm::vec2(0, 1)));
+
+	//Tangent space stuff
+	for (int i = 0; i < CubeIndices.size(); i += 3) {
+		Vertex& a = CubeVertices[CubeIndices[i]];
+		Vertex& b = CubeVertices[CubeIndices[i + 1]];
+		Vertex& c = CubeVertices[CubeIndices[i + 2]];
+
+		glm::vec3 edge1 = b.pos - a.pos;
+		glm::vec3 edge2 = c.pos - a.pos;
+		glm::vec2 deltaUV1 = b.texC - a.texC;
+		glm::vec2 deltaUV2 = c.texC - a.texC;
+
+		GLfloat f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+		glm::vec3 tangent, bitangent;
+
+		tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+		tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+		tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+		tangent = glm::normalize(tangent);
+
+		bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+		bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+		bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+		bitangent = glm::normalize(bitangent);
+
+		a.tangent = tangent;
+		b.tangent = tangent;
+		c.tangent = tangent;
+
+		a.bitangent = bitangent;
+		b.bitangent = bitangent;
+		c.bitangent = bitangent;
+	}
 
 	glGenVertexArrays(1, &CubeVAO);
 	glGenBuffers(1, &CubeVBO);
@@ -138,10 +174,18 @@ void initCube() {
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texC));
 
+	//Tangent
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent));
+
+	//Bitangent
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitangent));
+
 	glBindVertexArray(0);
 }
 
-void drawCube(Shader shader, GLuint diffuse, GLuint bump) {
+void drawCube(Shader shader, GLuint diffuse, GLuint bump, GLuint spec) {
 
 	//Textures
 	glActiveTexture(GL_TEXTURE0);	//0th texture unit
@@ -152,18 +196,25 @@ void drawCube(Shader shader, GLuint diffuse, GLuint bump) {
 	glUniform1i(glGetUniformLocation(shader.Program, "bump_map"), 1);
 	glBindTexture(GL_TEXTURE_2D, bump);
 
+	glActiveTexture(GL_TEXTURE2);
+	glUniform1i(glGetUniformLocation(shader.Program, "spec_map"), 2);
+	glBindTexture(GL_TEXTURE_2D, spec);
+
 	//Draw
 	glBindVertexArray(CubeVAO);
-	glDrawElements(GL_TRIANGLES, CubeIndices.size(), GL_UNSIGNED_INT, &CubeIndices[0]);
+	glDrawElements(GL_TRIANGLES, CubeIndices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
-	//Release Textures
-	glActiveTexture(GL_TEXTURE0);
+	//Release Textures: in reverse order!
+	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glEnable(GL_TEXTURE0);
 }
 
 void drawCube(GLuint texture) {
@@ -352,31 +403,29 @@ void setBoxColliderBoundary(FPSCamera* cam) {
 	}
 }
 
-void drawBoxColliders(Shader shader, GLuint diffuse, GLuint bump, FPSCamera* cam) {
+void drawBoxColliders(Shader shader, GLuint diffuse, GLuint bump, GLuint spec, FPSCamera* cam) {
 
-	shader.Use();
-	glStencilMask(0x00);
-
-	glUniformMatrix4fv(
+	glUniform3fv(
 		glGetUniformLocation(shader.Program, "lightPos"),
-		3,
-		GL_FALSE,
+		1,
 		LightPosition
 	);
 
-	glUniformMatrix4fv(
+	glUniform3fv(
 		glGetUniformLocation(shader.Program, "viewPos"),
-		3,
-		GL_FALSE,
+		1,
 		glm::value_ptr(cam->cameraPos)
 	);
 
+	float P[16];
+	glGetFloatv(GL_PROJECTION_MATRIX, P);
 	//Projection does not change
 	glUniformMatrix4fv(
-		glGetUniformLocation(shader.Program, "Projection"),
-		16,
+		glGetUniformLocation(shader.Program, "projection"),
+		1,
 		GL_FALSE,
-		glm::value_ptr(cam->projectionMatrix)
+		//glm::value_ptr(cam->projectionMatrix)
+		P
 	);
 
 	for (int i = 0; i < boxPosition.size(); i++) {
@@ -385,30 +434,21 @@ void drawBoxColliders(Shader shader, GLuint diffuse, GLuint bump, FPSCamera* cam
 		glm::mat4 boxScl = glm::scale(glm::mat4(1.0), glm::vec3(boxScale[i].x, boxScale[i].y, boxScale[i].z));
 
 		glUniformMatrix4fv(
-			glGetUniformLocation(shader.Program, "Model"),
-			16,
+			glGetUniformLocation(shader.Program, "model"),
+			1,
 			GL_FALSE,
-			glm::value_ptr(boxScl * boxPos)
+			glm::value_ptr(boxPos * boxScl)
 		);
 
 		glUniformMatrix4fv(
-			glGetUniformLocation(shader.Program, "View"),
-			16,
+			glGetUniformLocation(shader.Program, "view"),
+			1,
 			GL_FALSE,
 			glm::value_ptr(cam->viewMatrix)
 		);
 
-		drawCube(shader, diffuse, bump);
+		drawCube(shader, diffuse, bump, spec);
 	}
-
-	//Wipe your ass after dump
-	glUseProgram(NULL);
-	setupLights();
-	glEnable(GL_TEXTURE_2D);
-
-	glEnable(GL_STENCIL_TEST);
-	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 }
 
 void drawBoxColliders(GLuint* texture) {

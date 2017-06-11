@@ -13,7 +13,7 @@ FPSCamera* cam;
 static int mouseLastPosX = 0;
 static int mouseLastPosY = 0;
 
-GLuint texture[10];
+GLuint texture[11];
 
 GameStatus gameStatus = MenuScene;
 
@@ -21,10 +21,15 @@ Shader boxShader;
 
 void drawScene() {
 
-	drawBoxColliders(boxShader, texture[8], texture[9], cam);	//Modern GL
-
+	boxShader.Use();
+	glStencilMask(0x00);
+	glCullFace(GL_FRONT);
+	glEnable(GL_CULL_FACE);
+	drawBoxColliders(boxShader, texture[8], texture[9], texture[10], cam);	//Modern GL
+	glDisable(GL_CULL_FACE);
+	glUseProgram(NULL);
+	
 	//Ìì¿ÕºÐ
-
 	glStencilMask(0x00);
 	drawSkybox(texture);
 
@@ -66,7 +71,7 @@ void idle() {
 
 void initTexture() {
 	glEnable(GL_DEPTH_TEST);
-	glGenTextures(8, texture);
+	glGenTextures(11, texture);
 	loadTex(0, "Textures/18.bmp", texture);    //µØ°å
 	loadTex(1, "Textures/14.bmp", texture);    //Ïä×Ó
 
@@ -79,8 +84,11 @@ void initTexture() {
 	loadTex(6, "Textures/Skybox/SkyBox2_front.bmp", texture);
 	loadTex(7, "Textures/Skybox/SkyBox2_back.bmp", texture);
 
-	//loadTex(8, "Textures/19d.bmp", texture);		//Box Diffuse
-	//loadTex(9, "Textures/20b.bmp", texture);		//Box Bump
+	boxShader.Use();
+	loadTex(8, "Textures/19d.bmp", texture);		//Box Diffuse
+	loadTex(9, "Textures/20b.bmp", texture);		//Box Bump
+	loadTex(10,"Textures/21s.bmp", texture);		//Box Specular
+	glUseProgram(NULL);
 
 	//loadTex(2, "Textures/Skybox/Sunny_up.bmp", texture);
 	//loadTex(3, "Textures/Skybox/Sunny_down.bmp", texture);
@@ -165,7 +173,6 @@ void initializeGL() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	initCube();
 	boxShader.load("shader.vert", "shader.frag");
 	
 }
@@ -186,6 +193,10 @@ int main(int argc, char *argv[]) {
 	glutMouseFunc(mouseClick);
 	glutMotionFunc(mouseMove);
 	glutIdleFunc(idle);
+
+	boxShader.Use();
+	initCube(boxShader);
+	glUseProgram(NULL);
 
 	initTexture();
 	glutMainLoop();

@@ -19,8 +19,8 @@ void loadTex(int i, char *filename, GLuint* texture);
 void drawRect(GLuint texture);
 void drawCube(GLuint texture);
 
-void initCube();	
-void drawCube(Shader shader, GLuint diffuse, GLuint bump);	//modern gl draw, init before use.
+void initCube(Shader shader);	
+void drawCube(Shader shader, GLuint diffuse, GLuint bump, GLuint spec);	//modern gl draw, init before use.
 
 void drawSkybox(GLuint* texture);                  //绘制天空盒
 
@@ -28,7 +28,7 @@ void initBoxCollidersProperty();                   //设置盒子的位置和大小
 void initSingleBoxCollider(glm::vec3 pos, glm::vec3 scalar);    //设置单个盒子的位置和大小
 void setBoxColliderBoundary(FPSCamera* cam);       //设置盒子碰撞边缘
 void drawBoxColliders(GLuint* texture);            //绘制盒子
-void drawBoxColliders(Shader shader, GLuint diffuse, GLuint bump, FPSCamera* cam);	//Override with modernGL method
+void drawBoxColliders(Shader shader, GLuint diffuse, GLuint bump, GLuint spec, FPSCamera* cam);	//Override with modernGL method
 
 void initBreadModels();        //初始化面包集
 void drawBreadModels();        //绘制面包集
