@@ -807,18 +807,20 @@ void drawGameSceneUIText(FPSCamera* cam, int x, int y) {
 		0, 0, 1
 	);
 
-	vpMatI = glm::inverse(vpMatI);
-	glm::vec3 world = glm::transpose(vpMatI) * glm::vec3(x, y, 1);
+	vpMatI = glm::inverse(glm::transpose(vpMatI));
+	glm::vec3 world = (vpMatI) * glm::vec3(x, y, 1);
 	debugOnce(once, vpMatI);
 
 	//why to add this ??????
 	drawEnString("tt");
 
-	glPushMatrix();
+	
 	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
 	glLoadIdentity();
 	glOrtho(-1, 1, -1, 1, 0, 2);
 	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
 	glLoadIdentity();
 
 	selectFont(36, ANSI_CHARSET, FONT_ComicSansMS);
@@ -853,13 +855,19 @@ void drawGameSceneUIText(FPSCamera* cam, int x, int y) {
 			dSize = VictoryTextSizeGap;
 	}
 
+
 	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMultMatrixf(glm::value_ptr(cam->projectionMatrix));
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glMultMatrixf(glm::value_ptr(cam->viewMatrix));
 	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
+	//glMatrixMode(GL_PROJECTION);
+	//glLoadIdentity();
+	//glMultMatrixf(glm::value_ptr(cam->projectionMatrix));
+	//glMatrixMode(GL_MODELVIEW);
+	//glLoadIdentity();
+	//glMultMatrixf(glm::value_ptr(cam->viewMatrix));
+	//glPopMatrix();
 }
 
 void setupLights() {
