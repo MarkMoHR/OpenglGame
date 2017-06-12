@@ -61,7 +61,7 @@ static unsigned char *LoadBitmapFile(char *filename, BITMAPINFOHEADER *bitmapInf
 
 //加载纹理的函数    
 void loadTex(int i, char *filename, GLuint* texture) {
-	BITMAPINFOHEADER bitmapInfoHeader;                                 // bitmap信息头    
+	//BITMAPINFOHEADER bitmapInfoHeader;                                 // bitmap信息头    
 	unsigned char*   bitmapData;                                       // 纹理数据    
 
 	//bitmapData = LoadBitmapFile(filename, &bitmapInfoHeader);
