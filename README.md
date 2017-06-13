@@ -70,3 +70,5 @@ This is a simple game implemented with OpenGL. In the game, the scene is made up
     ![Image text](https://github.com/MarkMoHR/OpenglGame/raw/master/ResultScreenshots/bumpmap.png)
     
 1. __Particle System & Explosion Effect__:  When the player eats the bread, an explosion effect with several particles will be generate  ahead.
+
+    ![Image text](https://github.com/MarkMoHR/OpenglGame/raw/master/ResultScreenshots/explosion.png)
