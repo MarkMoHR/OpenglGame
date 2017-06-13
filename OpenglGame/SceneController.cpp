@@ -273,7 +273,7 @@ void drawSkybox(GLuint* texture) {
 	glRotatef(270, 1, 0, 0);
 
 	glScalef(SkyboxSize, SkyboxSize, 1);
-	drawRect(texture[2]);
+	drawRect(texture[1]);
 	glPopMatrix();
 
 	//下   
@@ -282,7 +282,7 @@ void drawSkybox(GLuint* texture) {
 	glRotatef(90, 1, 0, 0);
 
 	glScalef(SkyboxSize, SkyboxSize, 1);
-	drawRect(texture[3]);
+	drawRect(texture[2]);
 	glPopMatrix();
 
 	//左
@@ -292,7 +292,7 @@ void drawSkybox(GLuint* texture) {
 	glRotatef(180, 0, 0, 1);
 
 	glScalef(SkyboxSize, SkyboxSize, 1);
-	drawRect(texture[4]);
+	drawRect(texture[3]);
 	glPopMatrix();
 
 	//右
@@ -302,7 +302,7 @@ void drawSkybox(GLuint* texture) {
 	glRotatef(180, 0, 0, 1);
 
 	glScalef(SkyboxSize, SkyboxSize, 1);
-	drawRect(texture[5]);
+	drawRect(texture[4]);
 	glPopMatrix();
 
 	//前
@@ -311,7 +311,7 @@ void drawSkybox(GLuint* texture) {
 	glRotatef(180, 1, 0, 0);
 
 	glScalef(SkyboxSize, SkyboxSize, 1);
-	drawRect(texture[6]);
+	drawRect(texture[5]);
 	glPopMatrix();
 
 	//后
@@ -320,7 +320,7 @@ void drawSkybox(GLuint* texture) {
 	glRotatef(180, 0, 0, 1);
 
 	glScalef(SkyboxSize, SkyboxSize, 1);
-	drawRect(texture[7]);
+	drawRect(texture[6]);
 	glPopMatrix();
 }
 
@@ -475,7 +475,7 @@ void drawBoxColliders(GLuint* texture) {
 		glPushMatrix();
 		glTranslatef(boxPosition[i].x, boxPosition[i].y, boxPosition[i].z);
 		glScalef(boxScale[i].x, boxScale[i].y, boxScale[i].z);
-		drawCube(texture[1]);
+		drawCube(texture[0]);
 		glPopMatrix();
 	}	
 }
@@ -650,7 +650,7 @@ void initEnString(const char* str) {
 #define MAX_CHAR 128
 void drawEnString(const char* str) {
 	static int isFirstCall = 1;
-	static GLuint lists;
+	GLuint lists;
 
 	lists = glGenLists(MAX_CHAR);
 	wglUseFontBitmaps(wglGetCurrentDC(), 0, MAX_CHAR, lists);
@@ -837,9 +837,7 @@ void drawGameSceneUIText(FPSCamera* cam, int x, int y) {
 
 
 	//胜利，绘制 "Win!"
-	//if (eatenBreadNum == boxSum) {
-	if (eatenBreadNum == 3) {
-
+	if (eatenBreadNum == boxSum) {
 		victoryTextSize += dSize;
 		selectFont(victoryTextSize, ANSI_CHARSET, FONT_ComicSansMS);
 		glPushMatrix();

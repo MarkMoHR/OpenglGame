@@ -13,7 +13,7 @@ FPSCamera* cam;
 static int mouseLastPosX = 0;
 static int mouseLastPosY = 0;
 
-GLuint texture[11];
+GLuint texture[10];
 
 GameStatus gameStatus = MenuScene;
 
@@ -25,7 +25,7 @@ void drawScene() {
 	glStencilMask(0x00);
 	glCullFace(GL_FRONT);
 	glEnable(GL_CULL_FACE);
-	drawBoxColliders(boxShader, texture[8], texture[9], texture[10], cam);	//Modern GL
+	drawBoxColliders(boxShader, texture[7], texture[8], texture[9], cam);	//Modern GL
 	glDisable(GL_CULL_FACE);
 	glUseProgram(NULL);
 	
@@ -71,23 +71,22 @@ void idle() {
 
 void initTexture() {
 	glEnable(GL_DEPTH_TEST);
-	glGenTextures(11, texture);
+	glGenTextures(10, texture);
 	loadTex(0, "Textures/18.bmp", texture);    //地板
-	loadTex(1, "Textures/14.bmp", texture);    //箱子
 
 	//选择以下任意一种天空盒贴图
 
-	loadTex(2, "Textures/Skybox/SkyBox2_up.bmp", texture);
-	loadTex(3, "Textures/Skybox/SkyBox2_down.bmp", texture);
-	loadTex(4, "Textures/Skybox/SkyBox2_left.bmp", texture);
-	loadTex(5, "Textures/Skybox/SkyBox2_right.bmp", texture);
-	loadTex(6, "Textures/Skybox/SkyBox2_front.bmp", texture);
-	loadTex(7, "Textures/Skybox/SkyBox2_back.bmp", texture);
+	loadTex(1, "Textures/Skybox/SkyBox2_up.bmp", texture);
+	loadTex(2, "Textures/Skybox/SkyBox2_down.bmp", texture);
+	loadTex(3, "Textures/Skybox/SkyBox2_left.bmp", texture);
+	loadTex(4, "Textures/Skybox/SkyBox2_right.bmp", texture);
+	loadTex(5, "Textures/Skybox/SkyBox2_front.bmp", texture);
+	loadTex(6, "Textures/Skybox/SkyBox2_back.bmp", texture);
 
 	boxShader.Use();
-	loadTex(8, "Textures/19d.bmp", texture);		//Box Diffuse
-	loadTex(9, "Textures/20b.bmp", texture);		//Box Bump
-	loadTex(10,"Textures/21s.bmp", texture);		//Box Specular
+	loadTex(7, "Textures/19d.bmp", texture);		//Box Diffuse
+	loadTex(8, "Textures/20b.bmp", texture);		//Box Bump
+	loadTex(9,"Textures/21s.bmp", texture);		//Box Specular
 	glUseProgram(NULL);
 
 	//loadTex(2, "Textures/Skybox/Sunny_up.bmp", texture);
