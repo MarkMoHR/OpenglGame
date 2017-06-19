@@ -18,11 +18,11 @@ Model::~Model() {
 		textureIds = NULL;
 	}
 
-	aiReleaseImport(scene);    //Çå³ınewµÄ¿Õ¼ä£¬·ÀÖ¹ÄÚ´æĞ¹Â¶
+	aiReleaseImport(scene);    //æ¸…é™¤newçš„ç©ºé—´ï¼Œé˜²æ­¢å†…å­˜æ³„éœ²
 }
 
 bool Model::importModel(const string& pFile) {
-	//ÏÈ¼ì²éÎÄ¼şÊÇ·ñ´æÔÚ
+	//å…ˆæ£€æŸ¥æ–‡ä»¶æ˜¯å¦å­˜åœ¨
 	ifstream fin(pFile.c_str());
 	if (!fin.fail())
 		fin.close();
@@ -54,22 +54,22 @@ bool Model::loadTextures(const aiScene* scene, const string modelPath) {
 
 	ilInit(); // Initialization of DevIL 
 
-	//¶ÔÓÚÃ¿Ò»ÖÖ²ÄÖÊ Material£º
+	//å¯¹äºæ¯ä¸€ç§æè´¨ Materialï¼š
 	for (unsigned int m = 0; m < scene->mNumMaterials; m++) {
 		int texIndex = 0;
 		aiReturn texFound = AI_SUCCESS;
 
 		aiString path;	// filename
 
-		//¶Ôµ±Ç°²ÄÖÊ£¬»ñÈ¡ËùÓĞtextureµÄÍ¼Æ¬id
+		//å¯¹å½“å‰æè´¨ï¼Œè·å–æ‰€æœ‰textureçš„å›¾ç‰‡id
 		while (texFound == AI_SUCCESS) {
 			texFound = scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
-			textureIdMap[path.data] = NULL;    //°ÑÎÆÀíÍ¼Æ¬Â·¾¶¼Óµ½mapµÄkeyÖµ£¬value£¨ÎÆÀíÖ¸Õë£©Îª¿Õ
+			textureIdMap[path.data] = NULL;    //æŠŠçº¹ç†å›¾ç‰‡è·¯å¾„åŠ åˆ°mapçš„keyå€¼ï¼Œvalueï¼ˆçº¹ç†æŒ‡é’ˆï¼‰ä¸ºç©º
 			texIndex++;
 		}
 	}
 
-	int numTextures = textureIdMap.size();    //textureÊıÁ¿
+	int numTextures = textureIdMap.size();    //textureæ•°é‡
 
 											  // array with DevIL image IDs 
 	ILuint* imageIds = NULL;
@@ -83,24 +83,24 @@ bool Model::loadTextures(const aiScene* scene, const string modelPath) {
 	for (int i = 0; i < numTextures; i++) {
 		textureIds[i] = 20 + i;
 	}
-	//glGenTextures(numTextures, textureIds);    //¸ù¾İÎÆÀí²ÎÊı·µ»Øn¸öÎÆÀíÃû³Æ£¨²»Ò»¶¨ÊÇÁ¬ĞøµÄÕûÊı¼¯ºÏ£©
+	//glGenTextures(numTextures, textureIds);    //æ ¹æ®çº¹ç†å‚æ•°è¿”å›nä¸ªçº¹ç†åç§°ï¼ˆä¸ä¸€å®šæ˜¯è¿ç»­çš„æ•´æ•°é›†åˆï¼‰
 
 	// get iterator 
 	map<string, GLuint*>::iterator itr = textureIdMap.begin();
 
 	string basepath = getBasePath(modelPath);
 
-	//¶ÔÓÚÃ¿¸ötexture
+	//å¯¹äºæ¯ä¸ªtexture
 	for (int i = 0; i < numTextures; i++) {
 		//save IL image ID
 		string filename = (*itr).first;  // get filename
 		cout << "filename " << filename << endl;
-		(*itr).second = &textureIds[i];	  //°ÑÃ¿¸öÎÆÀíId·Å½ømapµÄvalue
+		(*itr).second = &textureIds[i];	  //æŠŠæ¯ä¸ªçº¹ç†Idæ”¾è¿›mapçš„value
 		itr++;								  // next texture
 
-		ilBindImage(imageIds[i]);    //Ã¿¸öÍ¼Ïñid°ó¶¨Ò»ÕÅÍ¼
+		ilBindImage(imageIds[i]);    //æ¯ä¸ªå›¾åƒidç»‘å®šä¸€å¼ å›¾
 		string fileloc = basepath + filename;
-		success = ilLoadImage(fileloc.c_str());    //¼ÓÔØÍ¼Æ¬
+		success = ilLoadImage(fileloc.c_str());    //åŠ è½½å›¾ç‰‡
 
 		if (success) { // If no error occurred: 
 
@@ -155,16 +155,16 @@ void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, f
 	aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
 	mTrans = mTrans * m2;
 
-	//¸üĞÂÃ¿¸ö½ÚµãµÄ±ä»»·½Ê½
+	//æ›´æ–°æ¯ä¸ªèŠ‚ç‚¹çš„å˜æ¢æ–¹å¼
 	mTrans.Transpose();
 	glPushMatrix();
 	glMultMatrixf((float*)&mTrans);
 
-	//¶Ôµ±Ç°½Úµã£¬±éÀú¸Ã½ÚµãµÄËùÓĞmMeshes(contains index to a mesh in scene.mMeshes[])
+	//å¯¹å½“å‰èŠ‚ç‚¹ï¼Œéå†è¯¥èŠ‚ç‚¹çš„æ‰€æœ‰mMeshes(contains index to a mesh in scene.mMeshes[])
 	for (int m = 0; m < nd->mNumMeshes; m++) {
 		const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[m]];
 
-		//Ìí¼Ótexture
+		//æ·»åŠ texture
 		applyMaterial(sc->mMaterials[mesh->mMaterialIndex], isAmbient);
 
 
@@ -173,7 +173,7 @@ void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, f
 		else
 			glEnable(GL_LIGHTING);
 
-		//¶Ôµ±Ç°µÄmesh£¬±éÀúËùÓĞÃæface
+		//å¯¹å½“å‰çš„meshï¼Œéå†æ‰€æœ‰é¢face
 		for (int f = 0; f < mesh->mNumFaces; f++) {
 			const struct aiFace* face = &(mesh->mFaces[f]);
 
@@ -194,7 +194,7 @@ void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, f
 				break;
 			}
 
-			glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);    //Ä£ĞÍ¼ÓÂş·´Éä¹â
+			glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);    //æ¨¡å‹åŠ æ¼«åå°„å…‰
 			
 			const GLfloat edgeColor[] = { 0.f, 1.0f, 1.f, 1.0f };
 			const GLfloat white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -208,13 +208,13 @@ void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, f
 			glBegin(face_mode);
 
 			int i;
-			//¶Ôµ±Ç°µÄface£¬±éÀúËùÓĞ¶¥µãË÷Òı£¨ÔÚMeshµÄÎ»ÖÃ£©
+			//å¯¹å½“å‰çš„faceï¼Œéå†æ‰€æœ‰é¡¶ç‚¹ç´¢å¼•ï¼ˆåœ¨Meshçš„ä½ç½®ï¼‰
 			for (i = 0; i < face->mNumIndices; i++) {
 				int index = face->mIndices[i];
 
-				//»·¾³¹â²»¼ÓÔØÎÆÀíºÍ·¨Ïß
+				//ç¯å¢ƒå…‰ä¸åŠ è½½çº¹ç†å’Œæ³•çº¿
 				if (mesh->mNormals != NULL && !isAmbient) {
-					if (mesh->HasTextureCoords(0)) {    //ÓĞÎÆÀí×ø±êÊ±
+					if (mesh->HasTextureCoords(0)) {    //æœ‰çº¹ç†åæ ‡æ—¶
 						glTexCoord2f(mesh->mTextureCoords[0][index].x,
 							1 - mesh->mTextureCoords[0][index].y); //mTextureCoords[channel][vertex]
 					}
@@ -229,7 +229,7 @@ void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, f
 		}
 	}
 
-	//µİ¹é»æÖÆÆäËû×Ó½Úµã
+	//é€’å½’ç»˜åˆ¶å…¶ä»–å­èŠ‚ç‚¹
 	for (int n = 0; n < nd->mNumChildren; ++n) {
 		recursiveRender(sc, nd->mChildren[n], scale, isAmbient);
 	}
@@ -321,3 +321,93 @@ void Model::applyMaterial(const aiMaterial *mtl, bool isAmbient) {
 	else
 		glEnable(GL_CULL_FACE);
 }
+
+
+/*
+void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale = 1.0f, bool isAmbient = true) {
+	aiMatrix4x4 mTrans = nd->mTransformation;
+	aiMatrix4x4 m2;
+	aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
+	mTrans = mTrans * m2;
+
+	//æ›´æ–°æ¯ä¸ªèŠ‚ç‚¹çš„å˜æ¢æ–¹å¼
+	mTrans.Transpose();
+	glPushMatrix();
+	glMultMatrixf((float*)&mTrans);
+
+	//å¯¹å½“å‰èŠ‚ç‚¹ï¼Œéå†è¯¥èŠ‚ç‚¹çš„æ‰€æœ‰mMeshes(contains index to a mesh in scene.mMeshes[])
+	for (int m = 0; m < nd->mNumMeshes; m++) {
+		const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[m]];
+
+		//æ·»åŠ texture
+		applyMaterial(sc->mMaterials[mesh->mMaterialIndex], isAmbient);
+
+
+		if (mesh->mNormals == NULL)
+			glDisable(GL_LIGHTING);
+		else
+			glEnable(GL_LIGHTING);
+
+		//å¯¹å½“å‰çš„meshï¼Œéå†æ‰€æœ‰é¢face
+		for (int f = 0; f < mesh->mNumFaces; f++) {
+			const struct aiFace* face = &(mesh->mFaces[f]);
+
+			GLenum face_mode;
+
+			switch (face->mNumIndices) {
+			case 1:
+				face_mode = GL_POINTS;
+				break;
+			case 2:
+				face_mode = GL_LINES;
+				break;
+			case 3:
+				face_mode = GL_TRIANGLES;
+				break;
+			default:
+				face_mode = GL_POLYGON;
+				break;
+			}
+
+			glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);    //æ¨¡å‹åŠ æ¼«åå°„å…‰
+			
+			const GLfloat edgeColor[] = { 0.f, 1.0f, 1.f, 1.0f };
+			const GLfloat white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			if (isAmbient) {
+				glColor4fv(edgeColor);
+				glEnable(GL_COLOR_MATERIAL);
+			}
+
+			glBegin(face_mode);
+
+			int i;
+			//å¯¹å½“å‰çš„faceï¼Œéå†æ‰€æœ‰é¡¶ç‚¹ç´¢å¼•ï¼ˆåœ¨Meshçš„ä½ç½®ï¼‰
+			for (i = 0; i < face->mNumIndices; i++) {
+				int index = face->mIndices[i];
+
+				//ç¯å¢ƒå…‰ä¸åŠ è½½çº¹ç†å’Œæ³•çº¿
+				if (mesh->mNormals != NULL && !isAmbient) {
+					if (mesh->HasTextureCoords(0)) {    //æœ‰çº¹ç†åæ ‡æ—¶
+						glTexCoord2f(mesh->mTextureCoords[0][index].x,
+							1 - mesh->mTextureCoords[0][index].y); //mTextureCoords[channel][vertex]
+					}
+					glNormal3fv(&mesh->mNormals[index].x);
+				}
+				glVertex3fv(&(mesh->mVertices[index].x));
+			}
+			glEnd();
+
+			if (isAmbient)
+				glDisable(GL_COLOR_MATERIAL);
+		}
+	}
+
+	//é€’å½’ç»˜åˆ¶å…¶ä»–å­èŠ‚ç‚¹
+	for (int n = 0; n < nd->mNumChildren; ++n) {
+		recursiveRender(sc, nd->mChildren[n], scale, isAmbient);
+	}
+
+	glPopMatrix();
+}*/
