@@ -37,6 +37,8 @@ void ParticleSystem::simulate(float dt) {
 	kinematics(dt);
 }
 
+
+//a loop to counting the age of the particles
 void ParticleSystem::aging(float dt) {
 
 	for (int i = 0; i < particles.size(); i++) {
@@ -48,6 +50,7 @@ void ParticleSystem::aging(float dt) {
 	}
 }
 
+//applying gravity system to the scene
 void ParticleSystem::applyGravity() {
 
 	for (int i = 0; i < particles.size(); i++)
@@ -56,6 +59,7 @@ void ParticleSystem::applyGravity() {
 	}
 
 }
+
 
 void ParticleSystem::kinematics(float dt) {
 
@@ -67,7 +71,7 @@ void ParticleSystem::kinematics(float dt) {
 
 }
 
-
+//the render function
 void ParticleSystem::render() {
 
 	for (int i = 0; i < particles.size(); i++)
