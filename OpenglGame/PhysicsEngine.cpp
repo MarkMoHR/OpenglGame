@@ -1,33 +1,6 @@
-#include "PhysicsEngine.h"
 
-PhysicsEngine::PhysicsEngine() {
-	velocity = glm::vec3(0.f, 0.f, 0.f);
-	gravity = glm::vec3(0.f, GravityAcceler, 0.f);
-	accelerUp = glm::vec3(0.f, 0.f, 0.f);
-
-	isJumping = false;
-}
-
-PhysicsEngine::~PhysicsEngine() {
-}
-
-void PhysicsEngine::setSceneOuterBoundary(float x1, float z1, float x2, float z2) {
-	outerBoundary = glm::vec4(x1, z1, x2, z2);
-}
-
-void PhysicsEngine::setSceneInnerBoundary(float x1, float y1, float z1, float x2, float y2, float z2) {
-	glm::vec3 key(x1 - BoundaryGap, y1 - BoundaryGap, z1 - BoundaryGap);
-	glm::vec3 value(x2 + BoundaryGap, y2 + BoundaryGap, z2 + BoundaryGap);
-
-	innerBoundaryMin.push_back(key);
-	innerBoundaryMax.push_back(value);
-}
-
-void PhysicsEngine::outCollisionTest(glm::vec3 & cameraPos, glm::vec3 & targetPos) {
-	outCollisionTestXZ(outerBoundary[0], outerBoundary[1], outerBoundary[2], outerBoundary[3], cameraPos, targetPos);
-}
 void PhysicsEngine::outCollisionTestXZ(float x1, float z1, float x2, float z2, glm::vec3 & cameraPos, glm::vec3 & targetPos) {
-	//ÏÈÉèÖÃ°üÎ§ºĞ£º±È¿Õ¼äÍâ²¿±ßÔµĞ¡Ò»µã
+	//å…ˆè®¾ç½®åŒ…å›´ç›’ï¼šæ¯”ç©ºé—´å¤–éƒ¨è¾¹ç¼˜å°ä¸€ç‚¹
 	if (x1 < 0)
 		x1 += 2;
 	else x1 -= 2;
@@ -44,7 +17,7 @@ void PhysicsEngine::outCollisionTestXZ(float x1, float z1, float x2, float z2, g
 		z2 += 2;
 	else z2 -= 2;
 
-	//Èç¹ûÄ¿±êÎ»ÖÃ³öÁË°üÎ§ºĞ£¬ÏÈ·Å»ØÀ´
+	//å¦‚æœç›®æ ‡ä½ç½®å‡ºäº†åŒ…å›´ç›’ï¼Œå…ˆæ”¾å›æ¥
 	if (targetPos[0] < x1) {
 		targetPos[0] = x1;
 	}
@@ -62,14 +35,14 @@ void PhysicsEngine::outCollisionTestXZ(float x1, float z1, float x2, float z2, g
 	float distance = sqrt((cameraPos[0] - targetPos[0])*(cameraPos[0] - targetPos[0]) +
 		(cameraPos[2] - targetPos[2])*(cameraPos[2] - targetPos[2]));
 
-	//ÈôÊÓµãÓëÄ¿±ê¾àÀëÌ«Ğ¡£¬Ôò¹Ì¶¨Ä¿±êÎ»ÖÃ£¬ÊÓµãÑØÕı¶ÔÄ¿±êµÄÄæ·½ÏòÒÆ¶¯
+	//è‹¥è§†ç‚¹ä¸ç›®æ ‡è·ç¦»å¤ªå°ï¼Œåˆ™å›ºå®šç›®æ ‡ä½ç½®ï¼Œè§†ç‚¹æ²¿æ­£å¯¹ç›®æ ‡çš„é€†æ–¹å‘ç§»åŠ¨
 	if (distance <= 2.0f) {
 		cameraPos[0] = 2.0f*(cameraPos[0] - targetPos[0]) / distance + targetPos[0];
 		cameraPos[2] = 2.0f*(cameraPos[2] - targetPos[2]) / distance + targetPos[2];
 	}
 	bool flag = false;
 
-	//ÔÙ¼ì²âÊÓµãÊÇ·ñ³öÁË°üÎ§ºĞ£¬ÈôÊÇÔò·Å»Ø
+	//å†æ£€æµ‹è§†ç‚¹æ˜¯å¦å‡ºäº†åŒ…å›´ç›’ï¼Œè‹¥æ˜¯åˆ™æ”¾å›
 	if (cameraPos[0] < x1) {
 		flag = true;
 		cameraPos[0] = x1;
@@ -87,7 +60,7 @@ void PhysicsEngine::outCollisionTestXZ(float x1, float z1, float x2, float z2, g
 		cameraPos[2] = z2;
 	}
 
-	//ÖØ¸´ÉÏÊöÔ¶ÀëÁ½µã¾àÀëµÄ²Ù×÷
+	//é‡å¤ä¸Šè¿°è¿œç¦»ä¸¤ç‚¹è·ç¦»çš„æ“ä½œ
 	if (flag) {
 		distance = sqrt((cameraPos[0] - targetPos[0])*(cameraPos[0] - targetPos[0]) +
 			(cameraPos[2] - targetPos[2])*(cameraPos[2] - targetPos[2]));
@@ -104,7 +77,7 @@ void PhysicsEngine::jumpAndUpdateVelocity() {
 	accelerUp.y = 0.f;
 }
 
-//ÅĞ¶ÏÔÚxzÆ½Ãæ£¬Ïà»úÎ»ÖÃÊÇ·ñÎ»ÓÚÅö×²ÌåÄÚ²¿
+//åˆ¤æ–­åœ¨xzå¹³é¢ï¼Œç›¸æœºä½ç½®æ˜¯å¦ä½äºç¢°æ’ä½“å†…éƒ¨
 bool insideTheCollider(glm::vec3 _cameraPos, glm::vec3 _innerMin, glm::vec3 _innerMax) {
 	float camX = _cameraPos.x;
 	float camZ = _cameraPos.z;
@@ -128,12 +101,12 @@ void PhysicsEngine::updateCameraVertMovement(glm::vec3 & cameraPos, glm::vec3 & 
 	//if (abs(velocity.y) < 0.1f)
 	//	cout << "#### cameraPos.y " << cameraPos.y << endl;
 
-	//¼ì²âËùÓĞÅö×²Ìå
+	//æ£€æµ‹æ‰€æœ‰ç¢°æ’ä½“
 	for (int i = 0; i < innerBoundaryMin.size(); i++) {
-		//Èç¹ûÔÚXZÆ½Ãæ½øÈëÅö×²ÌåËùÔÚÇøÓò
+		//å¦‚æœåœ¨XZå¹³é¢è¿›å…¥ç¢°æ’ä½“æ‰€åœ¨åŒºåŸŸ
 		if (insideTheCollider(cameraPos, innerBoundaryMin[i], innerBoundaryMax[i])) {
 			if (cameraPos.y - HeroHeight <= innerBoundaryMax[i][1]
-				&& cameraPos.y >= innerBoundaryMax[i][1]) {              //½Å½Ó´¥µ½Åö×²Ìå¶¥²¿
+				&& cameraPos.y >= innerBoundaryMax[i][1]) {              //è„šæ¥è§¦åˆ°ç¢°æ’ä½“é¡¶éƒ¨
 				//cout << "touch the top of collider" << endl;
 				isJumping = false;
 				accelerUp.y = -GravityAcceler;
@@ -143,7 +116,7 @@ void PhysicsEngine::updateCameraVertMovement(glm::vec3 & cameraPos, glm::vec3 & 
 			}
 
 			if (cameraPos.y >= innerBoundaryMin[i][1] &&
-				cameraPos.y - HeroHeight <= innerBoundaryMin[i][1]) {    //Í·½Ó´¥µ½Åö×²Ìåµ×²¿
+				cameraPos.y - HeroHeight <= innerBoundaryMin[i][1]) {    //å¤´æ¥è§¦åˆ°ç¢°æ’ä½“åº•éƒ¨
 				//cout << "touch the bottom of collider" << endl;
 				velocity.y = 0.f;
 				cameraPos.y = innerBoundaryMin[i][1];
@@ -157,7 +130,7 @@ void PhysicsEngine::updateCameraVertMovement(glm::vec3 & cameraPos, glm::vec3 & 
 }
 
 void PhysicsEngine::inCollisionTest(glm::vec3 & cameraPos, glm::vec3 & targetPos) {
-	//ºóÃæ¿ÉÒÔÔÚÕâÀïÌí¼Ó£ºÔ¤´¦Àí£¬ÅÅ³ıµ±Ç°¿Ï¶¨²»»á²úÉúÅö×²µÄÎïÌå
+	//åé¢å¯ä»¥åœ¨è¿™é‡Œæ·»åŠ ï¼šé¢„å¤„ç†ï¼Œæ’é™¤å½“å‰è‚¯å®šä¸ä¼šäº§ç”Ÿç¢°æ’çš„ç‰©ä½“
 	for (int i = 0; i < innerBoundaryMin.size(); i++) {
 		inCollisionTestWithHeight(innerBoundaryMin[i][0], innerBoundaryMin[i][1], innerBoundaryMin[i][2],
 			innerBoundaryMax[i][0], innerBoundaryMax[i][1], innerBoundaryMax[i][2], cameraPos, targetPos);
@@ -165,7 +138,7 @@ void PhysicsEngine::inCollisionTest(glm::vec3 & cameraPos, glm::vec3 & targetPos
 }
 
 void PhysicsEngine::inCollisionTestWithHeight(float x1, float y1, float z1, float x2, float y2, float z2, glm::vec3 & cameraPos, glm::vec3 & targetPos) {
-	//µ±ÉíÌå´¦ÓÚÅö×²Ìå´¹Ö±ÇøÓò·¶Î§ÄÚ£¬²Å½øĞĞXZÆ½ÃæµÄÅö×²¼ì²â
+	//å½“èº«ä½“å¤„äºç¢°æ’ä½“å‚ç›´åŒºåŸŸèŒƒå›´å†…ï¼Œæ‰è¿›è¡ŒXZå¹³é¢çš„ç¢°æ’æ£€æµ‹
 	if (!(cameraPos[1] <= y1 || cameraPos[1] - HeroHeight >= y2)) {
 		inCollisionTestXZ(x1, z1, x2, z2, cameraPos, targetPos);
 	}
@@ -181,7 +154,7 @@ bool OnSegment(dot pi, dot pj, dot pk) {
 	else return false;
 }
 
-//¼ì²âÏß¶ÎÏà½»¿ìËÙËã·¨
+//æ£€æµ‹çº¿æ®µç›¸äº¤å¿«é€Ÿç®—æ³•
 bool SegmentIntersect(dot p1, dot p2, dot p3, dot p4) {
 	int d1, d2, d3, d4;
 	d1 = Direction(p3, p4, p1);
@@ -214,8 +187,8 @@ void PhysicsEngine::inCollisionTestXZ(float x1, float z1, float x2, float z2, gl
 		if (targetPos[2] < cameraPos[2]) {
 			printf("1\n");
 
-			//ÀûÓÃÏàËÆÈı½ÇĞÎÔ­Àí¼ÆËã£¬
-			//½ö¸Ä±äz×ø±ê
+			//åˆ©ç”¨ç›¸ä¼¼ä¸‰è§’å½¢åŸç†è®¡ç®—ï¼Œ
+			//ä»…æ”¹å˜zåæ ‡
 			targetPos[2] = z2;
 			cameraPos[2] += (targetPos[2] - tarZ);
 		}
