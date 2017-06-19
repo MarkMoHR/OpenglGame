@@ -410,4 +410,692 @@ void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, f
 	}
 
 	glPopMatrix();
+void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale = 1.0f, bool isAmbient = true) {
+	aiMatrix4x4 mTrans = nd->mTransformation;
+	aiMatrix4x4 m2;
+	aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
+	mTrans = mTrans * m2;
+
+	//更新每个节点的变换方式
+	mTrans.Transpose();
+	glPushMatrix();
+	glMultMatrixf((float*)&mTrans);
+
+	//对当前节点，遍历该节点的所有mMeshes(contains index to a mesh in scene.mMeshes[])
+	for (int m = 0; m < nd->mNumMeshes; m++) {
+		const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[m]];
+
+		//添加texture
+		applyMaterial(sc->mMaterials[mesh->mMaterialIndex], isAmbient);
+
+
+		if (mesh->mNormals == NULL)
+			glDisable(GL_LIGHTING);
+		else
+			glEnable(GL_LIGHTING);
+
+		//对当前的mesh，遍历所有面face
+		for (int f = 0; f < mesh->mNumFaces; f++) {
+			const struct aiFace* face = &(mesh->mFaces[f]);
+
+			GLenum face_mode;
+
+			switch (face->mNumIndices) {
+			case 1:
+				face_mode = GL_POINTS;
+				break;
+			case 2:
+				face_mode = GL_LINES;
+				break;
+			case 3:
+				face_mode = GL_TRIANGLES;
+				break;
+			default:
+				face_mode = GL_POLYGON;
+				break;
+			}
+
+			glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);    //模型加漫反射光
+			
+			const GLfloat edgeColor[] = { 0.f, 1.0f, 1.f, 1.0f };
+			const GLfloat white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			if (isAmbient) {
+				glColor4fv(edgeColor);
+				glEnable(GL_COLOR_MATERIAL);
+			}
+
+			glBegin(face_mode);
+
+			int i;
+			//对当前的face，遍历所有顶点索引（在Mesh的位置）
+			for (i = 0; i < face->mNumIndices; i++) {
+				int index = face->mIndices[i];
+
+				//环境光不加载纹理和法线
+				if (mesh->mNormals != NULL && !isAmbient) {
+					if (mesh->HasTextureCoords(0)) {    //有纹理坐标时
+						glTexCoord2f(mesh->mTextureCoords[0][index].x,
+							1 - mesh->mTextureCoords[0][index].y); //mTextureCoords[channel][vertex]
+					}
+					glNormal3fv(&mesh->mNormals[index].x);
+				}
+				glVertex3fv(&(mesh->mVertices[index].x));
+			}
+			glEnd();
+
+			if (isAmbient)
+				glDisable(GL_COLOR_MATERIAL);
+		}
+	}
+
+	//递归绘制其他子节点
+	for (int n = 0; n < nd->mNumChildren; ++n) {
+		recursiveRender(sc, nd->mChildren[n], scale, isAmbient);
+	}
+
+	glPopMatrix();
+void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale = 1.0f, bool isAmbient = true) {
+	aiMatrix4x4 mTrans = nd->mTransformation;
+	aiMatrix4x4 m2;
+	aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
+	mTrans = mTrans * m2;
+
+	//更新每个节点的变换方式
+	mTrans.Transpose();
+	glPushMatrix();
+	glMultMatrixf((float*)&mTrans);
+
+	//对当前节点，遍历该节点的所有mMeshes(contains index to a mesh in scene.mMeshes[])
+	for (int m = 0; m < nd->mNumMeshes; m++) {
+		const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[m]];
+
+		//添加texture
+		applyMaterial(sc->mMaterials[mesh->mMaterialIndex], isAmbient);
+
+
+		if (mesh->mNormals == NULL)
+			glDisable(GL_LIGHTING);
+		else
+			glEnable(GL_LIGHTING);
+
+		//对当前的mesh，遍历所有面face
+		for (int f = 0; f < mesh->mNumFaces; f++) {
+			const struct aiFace* face = &(mesh->mFaces[f]);
+
+			GLenum face_mode;
+
+			switch (face->mNumIndices) {
+			case 1:
+				face_mode = GL_POINTS;
+				break;
+			case 2:
+				face_mode = GL_LINES;
+				break;
+			case 3:
+				face_mode = GL_TRIANGLES;
+				break;
+			default:
+				face_mode = GL_POLYGON;
+				break;
+			}
+
+			glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);    //模型加漫反射光
+			
+			const GLfloat edgeColor[] = { 0.f, 1.0f, 1.f, 1.0f };
+			const GLfloat white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			if (isAmbient) {
+				glColor4fv(edgeColor);
+				glEnable(GL_COLOR_MATERIAL);
+			}
+
+			glBegin(face_mode);
+
+			int i;
+			//对当前的face，遍历所有顶点索引（在Mesh的位置）
+			for (i = 0; i < face->mNumIndices; i++) {
+				int index = face->mIndices[i];
+
+				//环境光不加载纹理和法线
+				if (mesh->mNormals != NULL && !isAmbient) {
+					if (mesh->HasTextureCoords(0)) {    //有纹理坐标时
+						glTexCoord2f(mesh->mTextureCoords[0][index].x,
+							1 - mesh->mTextureCoords[0][index].y); //mTextureCoords[channel][vertex]
+					}
+					glNormal3fv(&mesh->mNormals[index].x);
+				}
+				glVertex3fv(&(mesh->mVertices[index].x));
+			}
+			glEnd();
+
+			if (isAmbient)
+				glDisable(GL_COLOR_MATERIAL);
+		}
+	}
+
+	//递归绘制其他子节点
+	for (int n = 0; n < nd->mNumChildren; ++n) {
+		recursiveRender(sc, nd->mChildren[n], scale, isAmbient);
+	}
+
+	glPopMatrix();
+void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale = 1.0f, bool isAmbient = true) {
+	aiMatrix4x4 mTrans = nd->mTransformation;
+	aiMatrix4x4 m2;
+	aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
+	mTrans = mTrans * m2;
+
+	//更新每个节点的变换方式
+	mTrans.Transpose();
+	glPushMatrix();
+	glMultMatrixf((float*)&mTrans);
+
+	//对当前节点，遍历该节点的所有mMeshes(contains index to a mesh in scene.mMeshes[])
+	for (int m = 0; m < nd->mNumMeshes; m++) {
+		const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[m]];
+
+		//添加texture
+		applyMaterial(sc->mMaterials[mesh->mMaterialIndex], isAmbient);
+
+
+		if (mesh->mNormals == NULL)
+			glDisable(GL_LIGHTING);
+		else
+			glEnable(GL_LIGHTING);
+
+		//对当前的mesh，遍历所有面face
+		for (int f = 0; f < mesh->mNumFaces; f++) {
+			const struct aiFace* face = &(mesh->mFaces[f]);
+
+			GLenum face_mode;
+
+			switch (face->mNumIndices) {
+			case 1:
+				face_mode = GL_POINTS;
+				break;
+			case 2:
+				face_mode = GL_LINES;
+				break;
+			case 3:
+				face_mode = GL_TRIANGLES;
+				break;
+			default:
+				face_mode = GL_POLYGON;
+				break;
+			}
+
+			glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);    //模型加漫反射光
+			
+			const GLfloat edgeColor[] = { 0.f, 1.0f, 1.f, 1.0f };
+			const GLfloat white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			if (isAmbient) {
+				glColor4fv(edgeColor);
+				glEnable(GL_COLOR_MATERIAL);
+			}
+
+			glBegin(face_mode);
+
+			int i;
+			//对当前的face，遍历所有顶点索引（在Mesh的位置）
+			for (i = 0; i < face->mNumIndices; i++) {
+				int index = face->mIndices[i];
+
+				//环境光不加载纹理和法线
+				if (mesh->mNormals != NULL && !isAmbient) {
+					if (mesh->HasTextureCoords(0)) {    //有纹理坐标时
+						glTexCoord2f(mesh->mTextureCoords[0][index].x,
+							1 - mesh->mTextureCoords[0][index].y); //mTextureCoords[channel][vertex]
+					}
+					glNormal3fv(&mesh->mNormals[index].x);
+				}
+				glVertex3fv(&(mesh->mVertices[index].x));
+			}
+			glEnd();
+
+			if (isAmbient)
+				glDisable(GL_COLOR_MATERIAL);
+		}
+	}
+
+	//递归绘制其他子节点
+	for (int n = 0; n < nd->mNumChildren; ++n) {
+		recursiveRender(sc, nd->mChildren[n], scale, isAmbient);
+	}
+
+	glPopMatrix();
+void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale = 1.0f, bool isAmbient = true) {
+	aiMatrix4x4 mTrans = nd->mTransformation;
+	aiMatrix4x4 m2;
+	aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
+	mTrans = mTrans * m2;
+
+	//更新每个节点的变换方式
+	mTrans.Transpose();
+	glPushMatrix();
+	glMultMatrixf((float*)&mTrans);
+
+	//对当前节点，遍历该节点的所有mMeshes(contains index to a mesh in scene.mMeshes[])
+	for (int m = 0; m < nd->mNumMeshes; m++) {
+		const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[m]];
+
+		//添加texture
+		applyMaterial(sc->mMaterials[mesh->mMaterialIndex], isAmbient);
+
+
+		if (mesh->mNormals == NULL)
+			glDisable(GL_LIGHTING);
+		else
+			glEnable(GL_LIGHTING);
+
+		//对当前的mesh，遍历所有面face
+		for (int f = 0; f < mesh->mNumFaces; f++) {
+			const struct aiFace* face = &(mesh->mFaces[f]);
+
+			GLenum face_mode;
+
+			switch (face->mNumIndices) {
+			case 1:
+				face_mode = GL_POINTS;
+				break;
+			case 2:
+				face_mode = GL_LINES;
+				break;
+			case 3:
+				face_mode = GL_TRIANGLES;
+				break;
+			default:
+				face_mode = GL_POLYGON;
+				break;
+			}
+
+			glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);    //模型加漫反射光
+			
+			const GLfloat edgeColor[] = { 0.f, 1.0f, 1.f, 1.0f };
+			const GLfloat white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			if (isAmbient) {
+				glColor4fv(edgeColor);
+				glEnable(GL_COLOR_MATERIAL);
+			}
+
+			glBegin(face_mode);
+
+			int i;
+			//对当前的face，遍历所有顶点索引（在Mesh的位置）
+			for (i = 0; i < face->mNumIndices; i++) {
+				int index = face->mIndices[i];
+
+				//环境光不加载纹理和法线
+				if (mesh->mNormals != NULL && !isAmbient) {
+					if (mesh->HasTextureCoords(0)) {    //有纹理坐标时
+						glTexCoord2f(mesh->mTextureCoords[0][index].x,
+							1 - mesh->mTextureCoords[0][index].y); //mTextureCoords[channel][vertex]
+					}
+					glNormal3fv(&mesh->mNormals[index].x);
+				}
+				glVertex3fv(&(mesh->mVertices[index].x));
+			}
+			glEnd();
+
+			if (isAmbient)
+				glDisable(GL_COLOR_MATERIAL);
+		}
+	}
+
+	//递归绘制其他子节点
+	for (int n = 0; n < nd->mNumChildren; ++n) {
+		recursiveRender(sc, nd->mChildren[n], scale, isAmbient);
+	}
+
+	glPopMatrix();
+void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale = 1.0f, bool isAmbient = true) {
+	aiMatrix4x4 mTrans = nd->mTransformation;
+	aiMatrix4x4 m2;
+	aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
+	mTrans = mTrans * m2;
+
+	//更新每个节点的变换方式
+	mTrans.Transpose();
+	glPushMatrix();
+	glMultMatrixf((float*)&mTrans);
+
+	//对当前节点，遍历该节点的所有mMeshes(contains index to a mesh in scene.mMeshes[])
+	for (int m = 0; m < nd->mNumMeshes; m++) {
+		const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[m]];
+
+		//添加texture
+		applyMaterial(sc->mMaterials[mesh->mMaterialIndex], isAmbient);
+
+
+		if (mesh->mNormals == NULL)
+			glDisable(GL_LIGHTING);
+		else
+			glEnable(GL_LIGHTING);
+
+		//对当前的mesh，遍历所有面face
+		for (int f = 0; f < mesh->mNumFaces; f++) {
+			const struct aiFace* face = &(mesh->mFaces[f]);
+
+			GLenum face_mode;
+
+			switch (face->mNumIndices) {
+			case 1:
+				face_mode = GL_POINTS;
+				break;
+			case 2:
+				face_mode = GL_LINES;
+				break;
+			case 3:
+				face_mode = GL_TRIANGLES;
+				break;
+			default:
+				face_mode = GL_POLYGON;
+				break;
+			}
+
+			glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);    //模型加漫反射光
+			
+			const GLfloat edgeColor[] = { 0.f, 1.0f, 1.f, 1.0f };
+			const GLfloat white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			if (isAmbient) {
+				glColor4fv(edgeColor);
+				glEnable(GL_COLOR_MATERIAL);
+			}
+
+			glBegin(face_mode);
+
+			int i;
+			//对当前的face，遍历所有顶点索引（在Mesh的位置）
+			for (i = 0; i < face->mNumIndices; i++) {
+				int index = face->mIndices[i];
+
+				//环境光不加载纹理和法线
+				if (mesh->mNormals != NULL && !isAmbient) {
+					if (mesh->HasTextureCoords(0)) {    //有纹理坐标时
+						glTexCoord2f(mesh->mTextureCoords[0][index].x,
+							1 - mesh->mTextureCoords[0][index].y); //mTextureCoords[channel][vertex]
+					}
+					glNormal3fv(&mesh->mNormals[index].x);
+				}
+				glVertex3fv(&(mesh->mVertices[index].x));
+			}
+			glEnd();
+
+			if (isAmbient)
+				glDisable(GL_COLOR_MATERIAL);
+		}
+	}
+
+	//递归绘制其他子节点
+	for (int n = 0; n < nd->mNumChildren; ++n) {
+		recursiveRender(sc, nd->mChildren[n], scale, isAmbient);
+	}
+
+	glPopMatrix();
+void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale = 1.0f, bool isAmbient = true) {
+	aiMatrix4x4 mTrans = nd->mTransformation;
+	aiMatrix4x4 m2;
+	aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
+	mTrans = mTrans * m2;
+
+	//更新每个节点的变换方式
+	mTrans.Transpose();
+	glPushMatrix();
+	glMultMatrixf((float*)&mTrans);
+
+	//对当前节点，遍历该节点的所有mMeshes(contains index to a mesh in scene.mMeshes[])
+	for (int m = 0; m < nd->mNumMeshes; m++) {
+		const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[m]];
+
+		//添加texture
+		applyMaterial(sc->mMaterials[mesh->mMaterialIndex], isAmbient);
+
+
+		if (mesh->mNormals == NULL)
+			glDisable(GL_LIGHTING);
+		else
+			glEnable(GL_LIGHTING);
+
+		//对当前的mesh，遍历所有面face
+		for (int f = 0; f < mesh->mNumFaces; f++) {
+			const struct aiFace* face = &(mesh->mFaces[f]);
+
+			GLenum face_mode;
+
+			switch (face->mNumIndices) {
+			case 1:
+				face_mode = GL_POINTS;
+				break;
+			case 2:
+				face_mode = GL_LINES;
+				break;
+			case 3:
+				face_mode = GL_TRIANGLES;
+				break;
+			default:
+				face_mode = GL_POLYGON;
+				break;
+			}
+
+			glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);    //模型加漫反射光
+			
+			const GLfloat edgeColor[] = { 0.f, 1.0f, 1.f, 1.0f };
+			const GLfloat white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			if (isAmbient) {
+				glColor4fv(edgeColor);
+				glEnable(GL_COLOR_MATERIAL);
+			}
+
+			glBegin(face_mode);
+
+			int i;
+			//对当前的face，遍历所有顶点索引（在Mesh的位置）
+			for (i = 0; i < face->mNumIndices; i++) {
+				int index = face->mIndices[i];
+
+				//环境光不加载纹理和法线
+				if (mesh->mNormals != NULL && !isAmbient) {
+					if (mesh->HasTextureCoords(0)) {    //有纹理坐标时
+						glTexCoord2f(mesh->mTextureCoords[0][index].x,
+							1 - mesh->mTextureCoords[0][index].y); //mTextureCoords[channel][vertex]
+					}
+					glNormal3fv(&mesh->mNormals[index].x);
+				}
+				glVertex3fv(&(mesh->mVertices[index].x));
+			}
+			glEnd();
+
+			if (isAmbient)
+				glDisable(GL_COLOR_MATERIAL);
+		}
+	}
+
+	//递归绘制其他子节点
+	for (int n = 0; n < nd->mNumChildren; ++n) {
+		recursiveRender(sc, nd->mChildren[n], scale, isAmbient);
+	}
+
+	glPopMatrix();
+void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale = 1.0f, bool isAmbient = true) {
+	aiMatrix4x4 mTrans = nd->mTransformation;
+	aiMatrix4x4 m2;
+	aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
+	mTrans = mTrans * m2;
+
+	//更新每个节点的变换方式
+	mTrans.Transpose();
+	glPushMatrix();
+	glMultMatrixf((float*)&mTrans);
+
+	//对当前节点，遍历该节点的所有mMeshes(contains index to a mesh in scene.mMeshes[])
+	for (int m = 0; m < nd->mNumMeshes; m++) {
+		const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[m]];
+
+		//添加texture
+		applyMaterial(sc->mMaterials[mesh->mMaterialIndex], isAmbient);
+
+
+		if (mesh->mNormals == NULL)
+			glDisable(GL_LIGHTING);
+		else
+			glEnable(GL_LIGHTING);
+
+		//对当前的mesh，遍历所有面face
+		for (int f = 0; f < mesh->mNumFaces; f++) {
+			const struct aiFace* face = &(mesh->mFaces[f]);
+
+			GLenum face_mode;
+
+			switch (face->mNumIndices) {
+			case 1:
+				face_mode = GL_POINTS;
+				break;
+			case 2:
+				face_mode = GL_LINES;
+				break;
+			case 3:
+				face_mode = GL_TRIANGLES;
+				break;
+			default:
+				face_mode = GL_POLYGON;
+				break;
+			}
+
+			glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);    //模型加漫反射光
+			
+			const GLfloat edgeColor[] = { 0.f, 1.0f, 1.f, 1.0f };
+			const GLfloat white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			if (isAmbient) {
+				glColor4fv(edgeColor);
+				glEnable(GL_COLOR_MATERIAL);
+			}
+
+			glBegin(face_mode);
+
+			int i;
+			//对当前的face，遍历所有顶点索引（在Mesh的位置）
+			for (i = 0; i < face->mNumIndices; i++) {
+				int index = face->mIndices[i];
+
+				//环境光不加载纹理和法线
+				if (mesh->mNormals != NULL && !isAmbient) {
+					if (mesh->HasTextureCoords(0)) {    //有纹理坐标时
+						glTexCoord2f(mesh->mTextureCoords[0][index].x,
+							1 - mesh->mTextureCoords[0][index].y); //mTextureCoords[channel][vertex]
+					}
+					glNormal3fv(&mesh->mNormals[index].x);
+				}
+				glVertex3fv(&(mesh->mVertices[index].x));
+			}
+			glEnd();
+
+			if (isAmbient)
+				glDisable(GL_COLOR_MATERIAL);
+		}
+	}
+
+	//递归绘制其他子节点
+	for (int n = 0; n < nd->mNumChildren; ++n) {
+		recursiveRender(sc, nd->mChildren[n], scale, isAmbient);
+	}
+
+	glPopMatrix();
+void Model::recursiveRender(const struct aiScene *sc, const struct aiNode* nd, float scale = 1.0f, bool isAmbient = true) {
+	aiMatrix4x4 mTrans = nd->mTransformation;
+	aiMatrix4x4 m2;
+	aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
+	mTrans = mTrans * m2;
+
+	//更新每个节点的变换方式
+	mTrans.Transpose();
+	glPushMatrix();
+	glMultMatrixf((float*)&mTrans);
+
+	//对当前节点，遍历该节点的所有mMeshes(contains index to a mesh in scene.mMeshes[])
+	for (int m = 0; m < nd->mNumMeshes; m++) {
+		const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[m]];
+
+		//添加texture
+		applyMaterial(sc->mMaterials[mesh->mMaterialIndex], isAmbient);
+
+
+		if (mesh->mNormals == NULL)
+			glDisable(GL_LIGHTING);
+		else
+			glEnable(GL_LIGHTING);
+
+		//对当前的mesh，遍历所有面face
+		for (int f = 0; f < mesh->mNumFaces; f++) {
+			const struct aiFace* face = &(mesh->mFaces[f]);
+
+			GLenum face_mode;
+
+			switch (face->mNumIndices) {
+			case 1:
+				face_mode = GL_POINTS;
+				break;
+			case 2:
+				face_mode = GL_LINES;
+				break;
+			case 3:
+				face_mode = GL_TRIANGLES;
+				break;
+			default:
+				face_mode = GL_POLYGON;
+				break;
+			}
+
+			glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);    //模型加漫反射光
+			
+			const GLfloat edgeColor[] = { 0.f, 1.0f, 1.f, 1.0f };
+			const GLfloat white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			if (isAmbient) {
+				glColor4fv(edgeColor);
+				glEnable(GL_COLOR_MATERIAL);
+			}
+
+			glBegin(face_mode);
+
+			int i;
+			//对当前的face，遍历所有顶点索引（在Mesh的位置）
+			for (i = 0; i < face->mNumIndices; i++) {
+				int index = face->mIndices[i];
+
+				//环境光不加载纹理和法线
+				if (mesh->mNormals != NULL && !isAmbient) {
+					if (mesh->HasTextureCoords(0)) {    //有纹理坐标时
+						glTexCoord2f(mesh->mTextureCoords[0][index].x,
+							1 - mesh->mTextureCoords[0][index].y); //mTextureCoords[channel][vertex]
+					}
+					glNormal3fv(&mesh->mNormals[index].x);
+				}
+				glVertex3fv(&(mesh->mVertices[index].x));
+			}
+			glEnd();
+
+			if (isAmbient)
+				glDisable(GL_COLOR_MATERIAL);
+		}
+	}
+
+	//递归绘制其他子节点
+	for (int n = 0; n < nd->mNumChildren; ++n) {
+		recursiveRender(sc, nd->mChildren[n], scale, isAmbient);
+	}
+
+	glPopMatrix();	
 }*/
