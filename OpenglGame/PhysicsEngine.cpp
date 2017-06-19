@@ -1,3 +1,31 @@
+#include "PhysicsEngine.h"
+
+PhysicsEngine::PhysicsEngine() {
+    velocity = glm::vec3(0.f, 0.f, 0.f);
+    gravity = glm::vec3(0.f, GravityAcceler, 0.f);
+    accelerUp = glm::vec3(0.f, 0.f, 0.f);
+
+    isJumping = false;
+}
+
+PhysicsEngine::~PhysicsEngine() {
+}
+
+void PhysicsEngine::setSceneOuterBoundary(float x1, float z1, float x2, float z2) {
+    outerBoundary = glm::vec4(x1, z1, x2, z2);
+}
+
+void PhysicsEngine::setSceneInnerBoundary(float x1, float y1, float z1, float x2, float y2, float z2) {
+    glm::vec3 key(x1 - BoundaryGap, y1 - BoundaryGap, z1 - BoundaryGap);
+    glm::vec3 value(x2 + BoundaryGap, y2 + BoundaryGap, z2 + BoundaryGap);
+
+    innerBoundaryMin.push_back(key);
+    innerBoundaryMax.push_back(value);
+}
+
+void PhysicsEngine::outCollisionTest(glm::vec3 & cameraPos, glm::vec3 & targetPos) {
+    outCollisionTestXZ(outerBoundary[0], outerBoundary[1], outerBoundary[2], outerBoundary[3], cameraPos, targetPos);
+}
 
 void PhysicsEngine::outCollisionTestXZ(float x1, float z1, float x2, float z2, glm::vec3 & cameraPos, glm::vec3 & targetPos) {
 	//先设置包围盒：比空间外部边缘小一点
